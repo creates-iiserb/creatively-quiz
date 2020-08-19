@@ -1,0 +1,1099 @@
+<html>
+
+<head>
+    <style>
+        /*!
+ Pure v1.0.0
+ Copyright 2013 Yahoo!
+ Licensed under the BSD License.
+ https://github.com/yahoo/pure/blob/master/LICENSE.md
+ */
+
+        /*!
+ normalize.css v^3.0 | MIT License | git.io/normalize
+ Copyright (c) Nicolas Gallagher and Jonathan Neal
+ */
+
+        /*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
+
+        /**
+ * 1. Set default font family to sans-serif.
+ * 2. Prevent iOS and IE text size adjust after device orientation change,
+ * without disabling user zoom.
+ */
+
+        html {
+            font-family: sans-serif;
+            /* 1 */
+            -ms-text-size-adjust: 100%;
+            /* 2 */
+            -webkit-text-size-adjust: 100%;
+            /* 2 */
+        }
+
+        body {
+            margin: 0;
+        }
+
+        a {
+            background-color: transparent;
+        }
+
+        a:active,
+        a:hover {
+            outline: 0;
+        }
+
+        abbr[title] {
+            border-bottom: 1px dotted;
+        }
+
+        b,
+        strong {
+            font-weight: bold;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin: 0.67em 0;
+        }
+
+        img {
+            border: 0;
+        }
+
+        svg:not(:root) {
+            overflow: hidden;
+        }
+
+        hr {
+            box-sizing: content-box;
+            height: 0;
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        td,
+        th {
+            padding: 0;
+        }
+
+        .pure-img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /*csslint regex-selectors:false, known-properties:false, duplicate-properties:false*/
+
+        .pure-g {
+            letter-spacing: -0.31em;
+            /* Webkit: collapse white-space between units */
+            *letter-spacing: normal;
+            /* reset IE < 8 */
+            *word-spacing: -0.43em;
+            /* IE < 8: collapse white-space between units */
+            text-rendering: optimizespeed;
+            font-family: FreeSans, Arimo, "Droid Sans", Helvetica, Arial, sans-serif;
+
+            /* Use flexbox when possible to avoid `letter-spacing` side-effects. */
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-flex-flow: row wrap;
+            -ms-flex-flow: row wrap;
+            flex-flow: row wrap;
+
+            /* Prevents distributing space between rows */
+            -webkit-align-content: flex-start;
+            -ms-flex-line-pack: start;
+            align-content: flex-start;
+        }
+
+        /* IE10 display: -ms-flexbox (and display: flex in IE 11) does not work inside a table; fall back to block and rely on font hack */
+
+        @media all and (-ms-high-contrast: none),
+        (-ms-high-contrast: active) {
+            table .pure-g {
+                display: block;
+            }
+        }
+
+        .opera-only :-o-prefocus,
+        .pure-g {
+            word-spacing: -0.43em;
+        }
+
+        .pure-u {
+            display: inline-block;
+            *display: inline;
+            /* IE < 8: fake inline-block */
+            zoom: 1;
+            letter-spacing: normal;
+            word-spacing: normal;
+            vertical-align: top;
+            text-rendering: auto;
+        }
+
+        .pure-g [class *="pure-u"] {
+            font-family: sans-serif;
+        }
+
+        .pure-u-1,
+        .pure-u-1-1,
+        .pure-u-1-2,
+        .pure-u-1-3,
+        .pure-u-2-3,
+        .pure-u-1-4,
+        .pure-u-3-4,
+        .pure-u-1-5,
+        .pure-u-2-5,
+        .pure-u-3-5,
+        .pure-u-4-5,
+        .pure-u-5-5,
+        .pure-u-1-6,
+        .pure-u-5-6,
+        .pure-u-1-8,
+        .pure-u-3-8,
+        .pure-u-5-8,
+        .pure-u-7-8,
+        .pure-u-1-12,
+        .pure-u-5-12,
+        .pure-u-7-12,
+        .pure-u-11-12,
+        .pure-u-1-24,
+        .pure-u-2-24,
+        .pure-u-3-24,
+        .pure-u-4-24,
+        .pure-u-5-24,
+        .pure-u-6-24,
+        .pure-u-7-24,
+        .pure-u-8-24,
+        .pure-u-9-24,
+        .pure-u-10-24,
+        .pure-u-11-24,
+        .pure-u-12-24,
+        .pure-u-13-24,
+        .pure-u-14-24,
+        .pure-u-15-24,
+        .pure-u-16-24,
+        .pure-u-17-24,
+        .pure-u-18-24,
+        .pure-u-19-24,
+        .pure-u-20-24,
+        .pure-u-21-24,
+        .pure-u-22-24,
+        .pure-u-23-24,
+        .pure-u-24-24 {
+            display: inline-block;
+            *display: inline;
+            zoom: 1;
+            letter-spacing: normal;
+            word-spacing: normal;
+            vertical-align: top;
+            text-rendering: auto;
+        }
+
+        .pure-u-1-24 {
+            width: 4.1667%;
+            *width: 4.1357%;
+        }
+
+        .pure-u-1-12,
+        .pure-u-2-24 {
+            width: 8.3333%;
+            *width: 8.3023%;
+        }
+
+        .pure-u-1-8,
+        .pure-u-3-24 {
+            width: 12.5000%;
+            *width: 12.4690%;
+        }
+
+        .pure-u-1-6,
+        .pure-u-4-24 {
+            width: 16.6667%;
+            *width: 16.6357%;
+        }
+
+        .pure-u-1-5 {
+            width: 20%;
+            *width: 19.9690%;
+        }
+
+        .pure-u-5-24 {
+            width: 20.8333%;
+            *width: 20.8023%;
+        }
+
+        .pure-u-1-4,
+        .pure-u-6-24 {
+            width: 25%;
+            *width: 24.9690%;
+        }
+
+        .pure-u-7-24 {
+            width: 29.1667%;
+            *width: 29.1357%;
+        }
+
+        .pure-u-1-3,
+        .pure-u-8-24 {
+            width: 33.3333%;
+            *width: 33.3023%;
+        }
+
+        .pure-u-3-8,
+        .pure-u-9-24 {
+            width: 37.5000%;
+            *width: 37.4690%;
+        }
+
+        .pure-u-2-5 {
+            width: 40%;
+            *width: 39.9690%;
+        }
+
+        .pure-u-5-12,
+        .pure-u-10-24 {
+            width: 41.6667%;
+            *width: 41.6357%;
+        }
+
+        .pure-u-11-24 {
+            width: 45.8333%;
+            *width: 45.8023%;
+        }
+
+        .pure-u-1-2,
+        .pure-u-12-24 {
+            width: 50%;
+            *width: 49.9690%;
+        }
+
+        .pure-u-13-24 {
+            width: 54.1667%;
+            *width: 54.1357%;
+        }
+
+        .pure-u-7-12,
+        .pure-u-14-24 {
+            width: 58.3333%;
+            *width: 58.3023%;
+        }
+
+        .pure-u-3-5 {
+            width: 60%;
+            *width: 59.9690%;
+        }
+
+        .pure-u-5-8,
+        .pure-u-15-24 {
+            width: 62.5000%;
+            *width: 62.4690%;
+        }
+
+        .pure-u-2-3,
+        .pure-u-16-24 {
+            width: 66.6667%;
+            *width: 66.6357%;
+        }
+
+        .pure-u-17-24 {
+            width: 70.8333%;
+            *width: 70.8023%;
+        }
+
+        .pure-u-3-4,
+        .pure-u-18-24 {
+            width: 75%;
+            *width: 74.9690%;
+        }
+
+        .pure-u-19-24 {
+            width: 79.1667%;
+            *width: 79.1357%;
+        }
+
+        .pure-u-4-5 {
+            width: 80%;
+            *width: 79.9690%;
+        }
+
+        .pure-u-5-6,
+        .pure-u-20-24 {
+            width: 83.3333%;
+            *width: 83.3023%;
+        }
+
+        .pure-u-7-8,
+        .pure-u-21-24 {
+            width: 87.5000%;
+            *width: 87.4690%;
+        }
+
+        .pure-u-11-12,
+        .pure-u-22-24 {
+            width: 91.6667%;
+            *width: 91.6357%;
+        }
+
+        .pure-u-23-24 {
+            width: 95.8333%;
+            *width: 95.8023%;
+        }
+
+        .pure-u-1,
+        .pure-u-1-1,
+        .pure-u-5-5,
+        .pure-u-24-24 {
+            width: 100%;
+        }
+
+        .pure-button {
+            /* Structure */
+            display: inline-block;
+            zoom: 1;
+            line-height: normal;
+            white-space: nowrap;
+            vertical-align: middle;
+            text-align: center;
+            cursor: pointer;
+            -webkit-user-drag: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            box-sizing: border-box;
+        }
+
+        /* Firefox: Get rid of the inner focus border */
+
+        .pure-button::-moz-focus-inner {
+            padding: 0;
+            border: 0;
+        }
+
+        /* Inherit .pure-g styles */
+
+        .pure-button-group {
+            letter-spacing: -0.31em;
+            /* Webkit: collapse white-space between units */
+            *letter-spacing: normal;
+            /* reset IE < 8 */
+            *word-spacing: -0.43em;
+            /* IE < 8: collapse white-space between units */
+            text-rendering: optimizespeed;
+            /* Webkit: fixes text-rendering: optimizeLegibility */
+        }
+
+        .opera-only :-o-prefocus,
+        .pure-button-group {
+            word-spacing: -0.43em;
+        }
+
+        .pure-button-group .pure-button {
+            letter-spacing: normal;
+            word-spacing: normal;
+            vertical-align: top;
+            text-rendering: auto;
+        }
+
+        /*csslint outline-none:false*/
+
+        .pure-button {
+            font-family: inherit;
+            font-size: 100%;
+            padding: 0.5em 1em;
+            color: #444;
+            /* rgba not supported (IE 8) */
+            color: rgba(0, 0, 0, 0.80);
+            /* rgba supported */
+            border: 1px solid #999;
+            /*IE 6/7/8*/
+            border: none rgba(0, 0, 0, 0);
+            /*IE9 + everything else*/
+            background-color: #E6E6E6;
+            text-decoration: none;
+            border-radius: 2px;
+        }
+
+        .pure-button-hover,
+        .pure-button:hover,
+        .pure-button:focus {
+            /* csslint ignore:start */
+            filter: alpha(opacity=90);
+            /* csslint ignore:end */
+            background-image: -webkit-linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.10));
+            background-image: linear-gradient(transparent, rgba(0, 0, 0, 0.05) 40%, rgba(0, 0, 0, 0.10));
+        }
+
+        .pure-button:focus {
+            outline: 0;
+        }
+
+        .pure-button-active,
+        .pure-button:active {
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15) inset, 0 0 6px rgba(0, 0, 0, 0.20) inset;
+            border-color: #0009;
+        }
+
+        .pure-button[disabled],
+        .pure-button-disabled,
+        .pure-button-disabled:hover,
+        .pure-button-disabled:focus,
+        .pure-button-disabled:active {
+            border: none;
+            background-image: none;
+            /* csslint ignore:start */
+            filter: alpha(opacity=40);
+            /* csslint ignore:end */
+            opacity: 0.40;
+            cursor: not-allowed;
+            box-shadow: none;
+            pointer-events: none;
+        }
+
+        .pure-button-hidden {
+            display: none;
+        }
+
+        .pure-button-primary,
+        .pure-button-selected,
+        a.pure-button-primary,
+        a.pure-button-selected {
+            background-color: rgb(0, 120, 231);
+            color: #fff;
+        }
+
+        .pure-button-group .pure-button {
+            margin: 0;
+            border-radius: 0;
+            border-right: 1px solid #111;
+            /* fallback color for rgba() for IE7/8 */
+            border-right: 1px solid rgba(0, 0, 0, 0.2);
+
+        }
+
+        .pure-button-group .pure-button:first-child {
+            border-top-left-radius: 2px;
+            border-bottom-left-radius: 2px;
+        }
+
+        .pure-button-group .pure-button:last-child {
+            border-top-right-radius: 2px;
+            border-bottom-right-radius: 2px;
+            border-right: none;
+        }
+
+        .pure-form input:not([type]) {
+            padding: 0.5em 0.6em;
+            display: inline-block;
+            border: 1px solid #ccc;
+            box-shadow: inset 0 1px 3px #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .pure-table {
+            /* Remove spacing between table cells (from Normalize.css) */
+            border-collapse: collapse;
+            border-spacing: 0;
+            empty-cells: show;
+            border: 1px solid #cbcbcb;
+        }
+
+        .pure-table caption {
+            color: #000;
+            font: italic 85%/1 arial, sans-serif;
+            padding: 1em 0;
+            text-align: center;
+        }
+
+        .pure-table td,
+        .pure-table th {
+            border-left: 1px solid #cbcbcb;
+            /* inner column border */
+            border-width: 0 0 0 1px;
+            font-size: inherit;
+            margin: 0;
+            overflow: visible;
+            /*to make ths where the title is really long work*/
+            padding: 0.5em 1em;
+            /* cell padding */
+        }
+
+        .pure-table td:first-child,
+        .pure-table th:first-child {
+            border-left-width: 0;
+        }
+
+        .pure-table thead {
+            background-color: #e0e0e0;
+            color: #000;
+            text-align: left;
+            vertical-align: bottom;
+        }
+
+        .pure-table td {
+            background-color: transparent;
+        }
+
+        .pure-table-odd td {
+            background-color: #f2f2f2;
+        }
+
+        /* nth-child selector for modern browsers */
+
+        .pure-table-striped tr:nth-child(2n-1) td {
+            background-color: #f2f2f2;
+        }
+
+        /* BORDERED TABLES */
+
+        .pure-table-bordered td {
+            border-bottom: 1px solid #cbcbcb;
+        }
+
+        .pure-table-bordered tbody>tr:last-child>td {
+            border-bottom-width: 0;
+        }
+
+        /* HORIZONTAL BORDERED TABLES */
+
+        .pure-table-horizontal td,
+        .pure-table-horizontal th {
+            border-width: 0 0 1px 0;
+            border-bottom: 1px solid #cbcbcb;
+        }
+
+        .pure-table-horizontal tbody>tr:last-child>td {
+            border-bottom-width: 0;
+        }
+
+        .oview {
+            font-size: 10px;
+            text-align: center;
+        }
+
+        .oview table {
+
+            width: 97%;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+
+        .boxTable {
+            font-size: 10px;
+            text-align: left;
+        }
+
+        .boxTable1 {
+            /* border:0.1px solid black; */
+            /* margin:0px; */
+            /* padding :0px; */
+            font-size: 10px;
+        }
+
+        .box {
+            text-align: center;
+            font-size: 10px;
+        }
+
+        .box table {
+            width: 89%;
+            margin: 10px;
+        }
+
+        .main {
+            font-weight: bold;
+        }
+
+        .space {
+            text-align: center;
+        }
+
+        .allbold {}
+
+        .ctr {
+            text-align: center
+        }
+
+        .watermark {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+
+        }
+
+        .watermark p {
+            position: absolute;
+            top: 45%;
+            left: 10%;
+        }
+
+        .light {
+            font-size: 10px;
+        }
+
+        .grey {
+            color: #777
+        }
+
+        body {
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .mr0px {
+            margin: 0px 0px 5px 0px;
+        }
+
+        .mrTop5px {
+            margin-top: 5px;
+        }
+
+        .fs16px {
+            font-size: 12px;
+        }
+
+        .pad5px {
+            padding: 5px;
+        }
+
+        table.sectionWiseSumm td {
+            font-size: 8px;
+        }
+
+        table.box td {
+            font-size: 9px;
+            padding: 3px;
+        }
+    </style>
+</head>
+
+<body style="background-color: white !important">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <div class="pure-g ">
+        <div class="pure-u-1-4 box" style="padding-top:5px!important">
+            <br>
+           <!-- logo with dark shade -->
+            <img src="data:image/png;base64,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UmVhZHlxyWU8AAADJGlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS42LWMxNDUgNzkuMTYzNDk5LCAyMDE4LzA4LzEzLTE2OjQwOjIyICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo5NTE4RTc4OUIyODIxMUU5Qjc2OEQ4NTI4MERFNTA5MyIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo5NTE4RTc4OEIyODIxMUU5Qjc2OEQ4NTI4MERFNTA5MyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ0MgMjAxOSBXaW5kb3dzIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6MkYzQjk2N0NBREZDMTFFOTg0RUI5NkFFN0VDMkExODAiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MkYzQjk2N0RBREZDMTFFOTg0RUI5NkFFN0VDMkExODAiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz778yLRAAAVXUlEQVR42uxd+VNcV3Y+zSrEvkvWgtgEkkCsFiCEZYE8nom3ODN2foqTvyIzVbM4+SlJTZLKT1kq+QOmUnHN2LK8jI1A2BKLWIwWkJBAgFjEvol9m/ud5qKmaeh3b7+GJvWOq4WR+nXfd+93zvnOueeeZ1tfX+8nonCyxBI1mbEJ8Kxb82CJjvgBQdY0WKJjefysObDEE8tjiSUWeCyxwGOJBR5LLPBYYokFHkss8FhigceSgy8Bvjgo7Jisrq5u+Tt/f3+y2WzWilng2SpLS0s0MTFBk5NT/HNxcXETPHbArDN4/P0DKDAwgMLCwig0NJTCw8MpKiqK/Pz0Dejz50PU3t5OkZER5Mku3/z8PGVmZlBcXNyeKFdzczOPF/OB+/ez+ZENP/1s/LtUNlcvCOb4xIkTFBwcfPDAMz09Q4MDAzQ5NUkvXrwQr1kGDIMkQEyIk5XBhK2trW2+5MQBQABSbGwMHTlyhA4fPqw0jpiYaP55//4DBiI+W08BlmlSAP9KRTmFKo5BVerrG+hpdzeFHDrkMD/8J23+uaEJW621jcEFJU1NTaakpCSPxoFd9Wnaw5KM8fFxevr0qdD457SwsEgBAbAmgeJnIKl6JQBqeXmZlsRrXSw6gJOYmEgnT54QYIpV+SS6caOKAQ0w6gAI2o7rIyLCqbz8itdcbEdHB/3wQytFR0erL7YY0+zsrFC2w1RRUeHpGGf2DDywLm1tbQyalRUsdAgDx8yKkJWVFXYf+Nz4+HhKT08z7Ebm5uao8ttKNv2HhEbrjAuLMTU1JTT6JBUWFpo+h4MDg3S7tpbdtqqrxtigaIuLC1R+5QpFREZ6Opy9AU9Hx2N6LDRmUXAbuBi4Jm+VEWGSYDmgYfj/lJRkOnPmDFs3dzIyMkLff3+LQkIAbH9tDjQ5OUm5OTmUfjrdtPsCuL8V4PbzANwTYlyFBfliTlLMGJJ3SzJgBWpqauju3bus0REREXzz3qw/w2cDNHA/AAGAW1VVTaOjo26vhbXKzs4S7mdaGzjyu1vFPQOMZkltbR2tiUHpAMfuUqcp6eRJs4Dj3TzPyPAwVVffFIs2xkQUmr+XRYv4LkwavnthYYEtSmdnp9vr0tLS2N2Bv+hwAnwv3CYWua6unt21p9Lc3MLWLExYbdU5lDwHrg5Wx0zxCngGhG/+TiwWfGyk8K37WemK7waRRkiKRbh//77ba/Ly8igmOopmZma00gD4Tlg9cDBERp7IkydPxKuTrbYOcDAGrENhYQFHsT4Nnt7eZ8LE1lKw0Dwsmm7oazaAYPmwAG1tDw0BqORiCQUFBTHX0LFAuG+4L1iMxsZGrXGPCVfb2nqPIzhdKwjLl5uboxh97gN4hoWrunOnkU12sJh4X6qtf+nGIgWA2jnk3U1wD6++WsgJzOXlFe3FA2CfPu2mrq4uZb5YV9cgAByoFZVivOA5x44do9TUVK/MqWngwUBv3botJj2YXYSvHsrw2yDu0Oih50O7vjchIYEKBE948WJG24JiEcNCwzg3Mz+/YDwRKPjS0vISW28d4MBigudAAbw2l2Z8CDLDDQ13xKD9TAMOfDVS6CC7+IkMrhkuUBLakJBDVN/QwJZlNzl16pTQ3BQ2/7ruKzgkmN3Gv/3rv1BvT4/ba1pafqCx8XGthKXM52D+Llx4le/Vp8Fz79493pMKDw/TTq7hOgAFJBXRAXJBINuxMTEUKSwFkooAKf4N74FZl2G5DoAAcqQPWlvvun1/fn4+HT9+nLVZ596io2OpS0R61z77lP7+7z4WgFjd8f1dXU/pccdjLYLsyHNycnK0stAq4jEskT/BDWOhdbQENwtAsJuIj6eY2BjWuGgRYods7BHJfS37Hph9HwzbHKMjo7SyuiKAhcSj8fwR3gcyHBkZRf/z3/9Fw0OD9Nbb7+z6fmgyLKuq1YmNi6Purk76+qvrlJaeTj3d3fTPv/0t/e3Pf7GdII+NcU4sPEIvZ8sZ7skpYS2T2Fp6WzwCDyYHvhymUTX5hw067G3BJSUmJnB+BftSO02KtESRDml1TDbIaH9/P/8eajAPgrFGCnDWVFfRo/Y2+p0AZHnFVQ6vXQlyREj4qSgI3occE7jgtc/+QOtr9gTfqeRkun7tGiUnp9AHH364+f6lxSVOBOI+dXJimE8oVZiw/rCUe8IfPbm4W2gR3JUqqQMYZmZecBkBCGlpaemOwNlNwCOQvygtvcgmGvtK8vN3syKwBveFhtfcrKLklFR61tdHX1y/vkOCrpmjSLgRo8Dh3NIGkK8LVzUlwvXIjR17jO1kUhL953/8OzU3NW6+v66+nrkKAKxDkBcX7dzt4sUSBqBPgwf8A+5KBzjQRizGa5fLPC4LgGDz87XXythcA0BykVxZg2jBofqePaOvvrzOvAdaDnf5x6+/2kae20VIjwRduAL/kDmlUOFKv/njV+L6DooR3ymBJxOIAPs//eM/UMejR/TsWR8DFO5ah+fYXfos53PwGXsWuepe2COiBlgdlWIiu8WZYYtx+fJr7GbMlIKCAsrMzOStBedFwARjJ3lekN5rn/5eAGVRhLL2aCZKLCTyPlU3Kl/eX3cPPWhrY1dlU7QCAGhDXS01NzaKe42jdScgMxcScwC++Mknn3BGXjcTL5UxI+O0KYrodfDg5nt6epVM7MtaklC6dKnUa6Y1K+sc1/MApNL6SG3Hb58LNzIq+Et09FZrAEtY+e23/DuubWpp2SDi/krzEiNA8VDwqBuV3wj+EW6/3mmOwLlGRoapqKiELl4qE/Oit/+Fz0EAAcuWk3N+73NmOhdNTEyye1CxOvDnkJKSYq/7ZOQ34BYQznNUIAg9IitYlocP23iBHfkLwJOQEM/lqDerq6nj8RMKCgzi7K5R5WDgxMTylsIX1z4jP3GPrpQLCw6Ljfe++ZM/4+9BJKdjcZDawFyWFBfvS8JVK9oaGxtVCsul1XHnk10VvmvdlADL6dPp1NjYxJ+JqKdeuJHGOw3sRmSKwHFBJycn6JVXXqHRsXESgRFnylWAg/sCWD/9/Sf8M9qB5zjPA7Zu3n3vfSbV4yJi1Nl8xTwhY11WVkohh0MODnjGxye4WMqoICSPEpq/0x4Lkm+PHz9miyYn3NMyTpBWaH5cXLwI57sEef1yo8grYBtwpqYmBVhC6P2ffsDuDEAyuqAYJrR/ZWWVvvn6CybjiUeOuATOysoyzQo38+77f0FJImQfev5cCziS52RnZWlFqfsGHphY+OhAYW6Nh5ELzEVcAWJgYICampo51IS2e3ISwhmQcfEJgpSO0PVrn/ICO+/y47sk33hPLGhCQiJzEZUxAIfY9a67fYtqxSs1Ld2l9UQhF3bYS8vKKCc3j3mXjoLgmklBGcDrMs9k0n5KgI7VQVgYEmLshAC4Dkz68ePHXHCnCS6YgpXAbrdZm6lcDB8WRmurK4Ig/4EtCSyQI3AkZ4BVhAtJTU3jcFkFOLyQAhBIEfzsww84O/x8cJCOHD26BUCSIKcJYL1+pYKtD/5dFTx2tzdH4cLdIbLcb1FW85mZ6Y0bN/Z+ZJDj4+O2bdDJ7DQmVicxthtvChJEHsdSvv7yOj3r7WWe4wwcWNBpocFXyisoJy+Pw2aVxcR77ZFONIPn2LHj9OuPP2ZlgVLIoMDOpyYZvD956x3+3gXBiXSAY08ErnNS1Jsbnl4DD3ytinYymRRh8HbSPcbnh0I1Sivdha9RUdF067sa+kGE2yCursaEM1bFFy9SSeklmhgfVw4ANiOdkpJNF44d+F/++jcMHvw7xgL3ia2Dt95+lyIi7dsVNk2CPDc3S/n5eZwC8AVRvgug3yh4ZAGWq0Nw0Nr1dXOrDPF9CMMfPLhHNTXVnBR0PqmBhQcPyjx7jq7+6MfsQmAtjFoCabVgUYsuvLptP6z00iX6q48+oq6uzg1+OEsVV3/EBHl8fNQjgnzu3Fk+5ekronwnO6X+d1pM8JnDLjYcV1fX5AFHU4S3HkSkNCQ4x5fXP2dr4HzSAAsHi5eSkkpvv/MeLQq+M6/oQvB5SCIiKZewQ6Tz0V//Db3xxpt0T3CgC0VFVFB4ga2bTfN+Yb1QEnL27FnyJVF2nDZFSwDNDwgMcJGL8Vf7MAN5loWFed7BhsuIccqz2JNz47wV8e77P+WjynAvKpYA7gfphFNJSVwFsJv88le/wnlcys0r4IjOXtKhfsO4DslYJFd9TXRsqOEzTZgs+GrUADsL9nLMOMO1zmeZQigwKIi++Pwan393BRxkxBEh/uyDv2SepQ4c+3Fi3sk3UNqJkwpvvf0e8xvdInr5vQBQj4EKRJ8Hj51DrBkGD0cXC9trd7F9gEN24D6e5HYwHlidm1U3qL39wbatByatgnegeg+u6uixYzQpXIhqSA73hu8qKrpgCAgNDQ3U19dPAeIaT+8P1zc2NnM2+kCDB+SX+YqC5QG5dCV5ebm8fzSFCESznDROALCluYmjK0RZjgv1MpezIIDz55R2+jSNDg8rRTuyJhjlGqiVMdKFo739IXV393LprBmWFbwxODiIbt+u1SqF9RnOg0o11UgBBNOVYCFQCIZzTciFoFMGykkNjyUsjO7U19P//e/vBCBs5Dcz42AVbbQmgAsr9MabP+ZcDjYtVeueHc8+GWmagBMZbe3tvEtvZhSJgn24zYb6Bnr9yusHEzwgbyoLjPcPD4/suGhwX1evXuVzTSNicVcN1gojmkJNTk/PU8rIzHTZWweuBsm7C8UlHO2oZnVlBjk1JYXS0903LUBYXltXR4fEPdsbJZgXTq6trbN7xqmKpsYmEcHtf4ZZuUsGXNDNmzW8UEZLK2B5YPLRfMlMYTDA9+4yDmx/IEciwaBKkNExDP12jER81VXVNC3uFRbRm+fWAGgkC711mM+gqHfJgCWBSd6Jx+y0EN3d5kcLTCZ3AQ4iqqGhIWXgSIKMLQCjITJc77gI43VLSVXGhgwzjgwZ6fzhW6E6Ee9VoQTBMMkWofHg4CAXgu+lYIIBXFXgyAxycXHRjicqHAXlJKishJXy9tl8JtDcTS2IT1vIgrcDBJ54TrKplKAiwrn/oG3PbgzF+SMjo4YW33lx4GbPnz/PSuJOhoeG6e7de3taeG7v/GFOF449Bw/cFoiuq/zNTjcrrQ+01NuC6AidMMLCQpVPdiCZiA1O9OhxJ9gdx5GZYCbIervcug5OZtXhunS7cOwLeCAnThzn3IfhDUWxiCCS6DqK6MtbgpwM8iEyP6ICHIAOXVWNNEHC4iGywk/dbl3cQ3FuTmm/0Fkpocjgk6pdOPYZPCcoMiLSbaMARw2DduKY7+3bt9kKmS1IoCESlB0iVNyqLKEoLi42lERsbmoWWj+uFVnZu1jMM+jOZ2dvbOEsawEIY8YY0LgKxWwHAjyIdE6cPL7ZONKopsiDduiq8ehRh2k3AjDW1HzH1gOTqUJcsXiwAkYJMtrT9fT2alU/yoz1slC68+ezKTklmZt/z/IWypqW9YFSBgcf4t5IKm1c9g08kGTBDZAllsdqVACEF4jm999971HIiWgDFYmIPGTJq84J1oyMDO7H404wVrRAAYfTsRSy00dBYf5mt64UTkKmCb6lv00DAo02NOjKZmqti5lJQmfBcVxMZnR0lJYWoh7aX5je+IR4PvqCpgdGzoNNjE9QX38fn7acFZ8RKqyNSqeMl+5jjt3H1asVbjcwAVQ0+0Yxe4huO9uJScrOPsftfZ0FlhMNQO3tVdStkMyIo33wHjQ7MKcPc2XlDQYBOovrAGhVmGsQR1wbLkAQJ0JkWJBD3NfQ3j5laXGRI6H5hUWuox4bG2e+hfcEabaw47B8eobKyi5RQqJ7q1NVVcWlsypND5wjOXBFHEp0JbgfzCUsqE5HMCkYY35+rrcz0OaAB9V5aJur05l8e7S0wntWWBx8FviRjEwkqZTE25Nm4PgcWK/002mUm5vr9v0tgpB2iogGe2g6kRUWNC7OfkZ/94WfZOumqxQyyQnud/nyZUO5Kl3wmHJICr4bJZKyxYknguSjfKINTlQCKLJdHf4OAMXEelJIJs94x4rFzBbRjvuEYxc96ezSbmcrn/eAWiB3AnCijyBcpGcEOphrirxZwmFaQ8szZzK5zhYAMuuhHbaNhYbbMuszJXAwwUZ62WB/rKWllROOOs97QAoAIEBzh0MOT6lxlwbJyEhnK6RPoA+zG0Qg4fPggSDUhWk2E0CmRgcbVgAgMLKY0H5ELyhYU+3W5VhEhkYEsJgqkpWVzQclHbt9qMjLPtBT3KDK58GDRUFxFw7C2V2Y7wBIWhyb+A8EGe7BnSAXBYKuQ16xePKUReIRvfPkRUVFXASGU6IovtexQDgKjYgYneR9Gjx2zhLIRO3o0aN8zFc39W6mtZHuB9qPKjwjwGltbeWcTmSE3k45n7MSPNCTiIcPFQrXirwNjkXrziO42t279019kIpXwCO1HHwCmVOE8J6cHvAUOHAbsILIISHSCTdQRtvX10cdHU+0anNk0hEu51zWOY/vAVtA6LuI7Qzd9jP26DSQC+PMLOHw6iOTEMmUltqLxqH5um34dUCDRcciYsIRigPMRjZKEb43NDRyxKdKkOWjiRAeg/+ZJXgEQFbWWftRZU0CbX+QyioDyKwE9J48rA0LiK5baNwI/42w1RuPUJKggbXDHB89eoRTCEZrbZAfqays5CPVqjzHzqlmRYgcSOXl5ZyjMVvweAZURtqLzvT6F8qa7Lz8PN9IEhoVRDpdnV3U19/PIIIpRT7CjJ488hGRmCDsUaEzGIrWVAT9lrEzrdqQXJatAmvl5a8rR1bGlRDgruLv0m0QgWvgxgs8f+LfzJ4/oBYCDoSmTiBw2GaApiM5CG11Pnfl6uYxZ9j7gUUDp5F5DXTJQpE9LI6qtLS08HkrFLltLgoqIA2F5Mh+L3E7X28/GhsRHLYwYLl3ykA7/t2Wpx5vnGBBCgFrgPEisDlQ4HEUmFFo+9joGHe8wo3Jm5faD0DZzfT65jPDZRYVkQSOF2ND9bDmI6nRQR7lDLy9Ate3MesOS7DliLXj4mCM2E6Rz6fYCxkY6BdWspYVTiY5Gea2lwq30zPV8cIc4lx/YEAglV4q1W1pvP/gcRTkYWCS4YKwQLAq9r9bYBcHoID4ATTQOvy/GS4P34k8ir9/wIZlW98Ckq2avL5Fo+URJNVaaU8F9dmLCwvcREIW+UtguALLlt/xEmPG/EoLduDBY8mBEu8+3diS/99igccSCzyWWOCxxAKPJRZ4LLHEAo8l3hDkedatabBER3A6f4CsJKEl6jLzJwEGAAKv7hfxrPzyAAAAAElFTkSuQmCC">
+
+        </div>
+
+        <div class="pure-u-1-2 box">
+            <h1 class="grey mr0px mrTop5px" style="font-size: 15px;">Performance summary</h1>
+            <h2 class="grey mr0px fs16px">
+                <%=data.meta.quizid%> :
+                    <%=data.meta.title%>
+            </h2>
+            <%if(data.meta.authorName){%>
+                <h4 class="grey mr0px">
+                    By:
+                    <%=data.meta.authorName%>
+                </h4>
+                <%}%>
+
+                    <p class="grey">
+                        <%  let convertDateToTimeZone = (date)=>
+            {
+                var targetTime = new Date(date);
+                var timeZoneFromDB = data.meta.timeZone;               
+                <!-- //get the timezone offset from local time in minutes -->
+                var tzDifference = timeZoneFromDB * 60 + targetTime.getTimezoneOffset();
+                <!-- //convert the offset to milliseconds, add to targetTime, and make a new Date -->
+                var offsetTime = new Date(targetTime.getTime() + tzDifference * 60 * 1000);
+                var convrtString = offsetTime.toString();
+                var showDate = convrtString.slice(4,25);
+                return showDate;
+            }
+            %>
+            <%
+            let convertToTz = (i)=>{
+                let integerPart = Math.abs(parseInt(i));
+              let decimalPart = Math.abs(parseFloat(i));
+              let seconds = (decimalPart - integerPart)*60;
+            
+              let part2 = seconds;
+              if(seconds<10){            
+              part2 = "0"+seconds;
+              }              
+              let part1 = parseInt(i);
+              let sign = (part1<0)?"-":"+"
+              let hour = integerPart;
+              if(integerPart<=10){
+              hour = "0"+integerPart
+              }
+              let str = "GMT"+sign+hour+part2
+              return str;
+            }   
+           var timeZoneee = convertToTz(data.meta.timeZone);
+           var convertedDate = convertDateToTimeZone(data.meta.beginTime)  ;
+           var endlocaltime = convertDateToTimeZone(data.meta.endTime)  
+            %>
+                      
+          <%=convertedDate%><%=timeZoneee%> - <%=endlocaltime%><%=timeZoneee%>
+
+
+                                        <%if(data.meta.duration != "Not Applicable"){%>
+                                            (duration:
+                                            <%=data.meta.duration%> mins)
+                                                <%}%>
+                    </p>
+
+
+        </div>
+        <div class="pure-u-1-4 box grey">
+            <br>
+            <h3>User details</h3>
+            <%
+ var uname = data.userdata[data.userCol];
+ delete data.userdata[data.userCol];
+ %>
+                User Id:
+                <%=uname%>
+                    <br>
+                    <br>
+                    <% var uDetails = Object.values(data.userdata);%>
+                        <% if(uDetails.length>0){for(var j=0 ;j<uDetails.length;j++){%>
+                            <%=uDetails[j]%>
+                                <br>
+                                <br>
+                                <%}}%>
+
+
+        </div>
+    </div>
+
+    <hr class="mr0px" style="border:1px solid #dbdad7">
+
+    <%if(data.summary.length != 1){%>
+        <div class="pure-g">
+            <% for (var i = 0; i < data.summary.length; i++) {
+ %>
+                <%if(data.summary.length == 2 || data.summary.length == 4 ){
+ var mrCls = 'mr0px mrTop5px';
+ %>
+                    <div class="pure-u-1-2 box">
+                        <%} else if(data.summary.length == 3 || data.summary.length == 5){
+ var mrCls = 'mr0px'; 
+ %>
+                            <div class="pure-u-1-3 box">
+                                <%}%>
+                                    <h3 class="grey <%=mrCls%>">
+                                        <%= i+1 %>.
+                                            <%=data.summary[i].title%>
+                                                <%if(data.summary[i].isAttempted == false){%>. (Not Attempted)
+                                                    <%}%>
+                                    </h3>
+
+                                    <table class="pure-table box">
+                                        <tbody>
+                                            <tr>
+                                                <td>                                                   
+                                                    <% 
+                                                        if(data.summary[i].partialGrading == true) {
+                                                            if(data.summary[i].hasOwnProperty('partialScores')){ %>
+                                                     
+                                                                <%= data.summary[i].score + data.summary[i].partialScores%>/
+                                                                    <%=data.summary[i].max%>                                                            
+                                                            <% } 
+                                                              } else { %>   
+                                                             <%= data.summary[i].score%>/
+                                                         <%=data.summary[i].max%>
+                                                         <%}%>                                                    
+                                                </td>
+                                                <td>
+                                                    <%=data.summary[i].correct%>/
+                                                        <%=data.summary[i].graded%>
+                                                </td>
+                                                <td>
+                                                    <%=data.summary[i].time%>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><% 
+                                                    if(data.summary[i].partialGrading == true) {
+                                                    if(data.summary[i].hasOwnProperty('partialScores')){ %>
+                                                        Score*
+                                                        <% }  } else { %>                                                  
+                                                                                                 
+                                                    Score 
+                                                    <%}%> 
+                                                </td>
+                                                <td>Correct Answers</td>
+                                                <td>Time Taken</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <table class="pure-table pure-table-horizontal boxTable sectionWiseSumm">
+                                        <tbody>
+                                            <tr>
+                                                <td>Graded Content</td>
+                                                <td>
+                                                    <%=data.summary[i].graded%>
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td>Attempted Questions</td>
+                                                <td>
+                                                    <%=data.summary[i].attempted%>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Skipped Questions</td>
+                                                <td>
+                                                    <%=data.summary[i].skipped%>
+                                                </td>
+                                            </tr>
+                                            <%if(data.summary[i].helpAllowed > 0){%>
+                                                <tr>
+
+                                                    <td>Help Used</td>
+                                                    <td>
+                                                        <%=data.summary[i].help%>
+                                                    </td>
+                                                </tr>
+                                                <%}%>
+                                                    <tr>
+                                                        <td>Ungraded Content</td>
+                                                        <td>
+                                                            <%=data.summary[i].ungraded%>
+                                                        </td>
+                                                    </tr>
+                                        </tbody>
+                                    </table>
+                            </div>
+                            <% } %>
+                                <%if(data.summary.length == 5){%>
+                                    <div class="pure-u-1-3 box watermark mr0px">
+                                        <p class="content grey mr0px"> This space is intentionally left blank</p>
+                                    </div>
+                                    <%}%>
+                    </div>
+                    <%}%>
+                        <%if(data.summary.length == 1 || data.summary.length == 2 || data.summary.length == 3){%>
+                            <br>
+                            <%}%>
+
+
+
+
+                                <div class="pure-g">
+                                    <div class="pure-u-1 oview">
+
+                                        <table class="pure-table pure-table-bordered ctr boxTable1" style="background-color:#f4f3ef;margin-bottom: 5px;">
+
+                                            <tr style="border-bottom:1px solid #cbcbcb;">
+                                                <%if(data.summary.length == 1){%>
+                                                    <th colspan="7" class='ctr'>Overview</th>
+                                                    <!-- colspan changed -->
+                                                    <%} else {%>
+                                                        <th colspan="6" class='ctr'>Overview</th>
+                                                        <%}%>
+
+                                            </tr>
+
+                                            <tr class="ctr">
+                                                <%if(data.summary.length > 1){%>
+                                                    <th>Sections
+                                                        <br> attempted</th>
+                                                    <%}%>
+
+                                                        <th>
+                                                            Quiz timings
+                                                        </th>
+
+                                                        <th>Total questions</th>
+                                                        <th>Questions
+                                                            <br> Attempted</th>
+
+                                                        <%if(data.summary.length == 1){%>
+                                                            <th>Questions
+                                                                <br>Skipped</th>
+                                                            <%if(data.summary[0].helpAllowed>0){%>
+                                                                <th>Help
+                                                                    <br> Used</th>
+                                                                <%}%>
+                                                                    <%}%>
+
+                                                                        <th>Correct
+                                                                            <br> answers</th>
+                                                                            <th>Total
+                                                                                <% var partialgrad = false; 
+                                                                                for (var i = 0; i < data.summary.length; i++){
+                                                                                    if(data.summary[i].partialGrading == true) {
+                                                                                       if(data.summary[i].hasOwnProperty('partialScores')){  
+                                                                                        partialgrad = true;  
+                                                                                    } 
+                                                                                    }                                                
+                                                                                 }                                        
+                                                                                  %>
+                                                                              <% if(partialgrad == true){%>
+                                                                                <br> Score*
+                                                                                <%} else {%>
+                                                                                    <br> Score
+                                                                                    <%}%>
+                                                                                </th>
+                                            </tr>
+                                            <tr class="ctr">
+                                                <%
+ var count = Object.keys(data.submission.sectionStarted).length;
+ var total_sec_attempted = 0;
+ var total_sec_attempted1 = Object.values(data.submission.sectionStarted);
+ total_sec_attempted1.forEach((itm)=>{
+ if(itm == true){
+ total_sec_attempted ++ 
+ } 
+ })
+ %>
+
+                                                    <%if(data.summary.length > 1){%>
+                                                        <th style="font-size:15px;">
+                                                            <%=total_sec_attempted%>/
+                                                                <%=count%>
+                                                        </th>
+                                                        <%}%>
+                                                            <th>Started on :
+                                                                <% if(data.submission.isStarted){ 
+                                                                    var startedOnTime = convertDateToTimeZone(data.submission.startedOn) ;
+ %>
+ <%=startedOnTime%><%=timeZoneee%>
+                                                                        <%}else{ %>Not attempted
+                                                                            <%}%>
+                                                                                <br> Submitted on :
+                                                                                <%
+                                                                                var submittedOnTime = convertDateToTimeZone(data.submission.submitted) ; 
+ %>
+                                                                                     <%=submittedOnTime%><%=timeZoneee%>
+                                                                                        <%
+ var allSec = 0;
+ var date = new Date(1970,0,1);
+ data.summary.forEach((itm) =>{ 
+ 
+ var dArr = itm.time.split(":");
+ 
+ allSec = allSec+ (+dArr[0]) * 60 * 60 + (+dArr[1]) * 60 + (+dArr[2]); 
+
+ });
+
+ date.setSeconds(allSec);
+ var allTimeTaken = date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
+ 
+ %>
+
+                                                                                            <br> Time taken :
+                                                                                            <%=allTimeTaken%>
+                                                            </th>
+
+                                                            <%var grade = 0;
+ var ungrade = 0;
+ var attempted = 0;
+ var correctAns = 0;
+ var total_score = 0;
+ var total_max = 0;
+ var help = 0;
+ for(var q=0; q < data.summary.length ; q++){ 
+ grade += data.summary[q].graded; 
+help +=data.summary[q].help;
+ ungrade += data.summary[q].ungraded;
+ attempted += data.summary[q].attempted;
+ if(isNaN(data.summary[q].correct) == false){
+ correctAns += data.summary[q].correct; 
+ } 
+ if(data.summary[q].partialGrading == true) {
+    if(data.summary[q].hasOwnProperty('partialScores')){
+        total_score += data.summary[q].score + data.summary[q].partialScores; 
+     }
+ } 
+ else{
+    total_score += data.summary[q].score; 
+ }
+ total_max += data.summary[q].max; 
+ }%>
+
+                                                                <th>Graded =
+                                                                    <%=grade%>
+                                                                        <br> Ungraded =
+                                                                        <%=ungrade%>
+                                                                </th>
+                                                                <th style="font-size:15px;">
+                                                                    <%=attempted%>
+                                                                </th>
+                                                                <%if(data.summary.length == 1){%>
+                                                                    <th style="font-size:15px;">
+                                                                        <%=grade - attempted%>
+                                                                    </th>
+                                                                    <%if(data.summary[0].helpAllowed > 0){%>
+                                                                        <th style="font-size:15px;">
+                                                                            <%=help%>
+                                                                        </th>
+                                                                        <%}%>
+                                                                            <%}%>
+                                                                                <th style="font-size:15px;">
+                                                                                    <%=correctAns%>
+                                                                                </th>
+                                                                                <th>
+                                                                                    <b style="font-size:15px;">
+                                                                                        <%=total_score%>
+                                                                                    </b>
+                                                                                    <hr> out of
+                                                                                    <%=total_max%>
+                                                                                </th>
+
+                                            </tr>
+                                        </table>
+
+                                        <span class="grey" style=" font-size:8px;text-align:center;padding-top:3px">
+                                            <% var partialFound = false; 
+                                            for (var i = 0; i < data.summary.length; i++){
+                                                if(data.summary[i].partialGrading == true) {
+                                                   if(data.summary[i].hasOwnProperty('partialScores')){  
+                                                    partialFound = true;  
+                                                } 
+                                                }                                                
+                                             }                                        
+                                              %>
+                                              <% if(partialFound == true){%>
+                                            <span style="color:black"> * Partial credit given for partially correct answers &nbsp; &nbsp;</span>   
+                                            <%}%> 
+                                            
+                                            This automatically generated quiz summary was downloaded from Examineer.in on
+                                            <%
+                                            var cur_date = new Date();  
+                                            var cur_date_string = cur_date.toString();
+                                            var slice_curDate = cur_date_string.slice(0,34);                                        
+                                         %>
+                                         <%=slice_curDate%>.
+                                                    <br>if you find any inconsistencies contact your quiz administrator. For
+                                                    technical issues, inform us at support@examineer.in.
+                                        </span>
+                                    </div>
+                                </div>
+
+
+                                <!-- this code is used for "this space is left blank intentionally" -->
+
+
+                                <!-- <%if(data.summary.length == 1 || data.summary.length == 2 || data.summary.length == 3){%> -->
+
+                                <!-- <br> -->
+
+                                <!-- <div class="grey" style="text-align:center;font-size:10px;">
+
+ <!--------------------End Of File------------------
+
+ </div> -->
+                                <!-- <%}%> -->
+</body>
+
+</html>
