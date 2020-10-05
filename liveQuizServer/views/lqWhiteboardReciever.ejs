@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+	
+	<link href="/literallycanvas/css/literallycanvas.css" rel="stylesheet">
+	<style>
+      .cover{
+			position: fixed; 
+			width: 100%; 
+			height: 100%; 
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background-color: transparent; 
+			z-index: 2; 
+			cursor: pointer; 
+	  }
+	  body{
+		overflow: hidden;
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	  }
+	  .literally .lc-drawing.with-gui {
+		left: 0;
+      }
+	</style>
+</head>
+<body>
+	<div class="cover"></div>
+	<div id="output"></div>
+	<input type="hidden" value="<%=lqUrl%>" id="socketUrl" >
+	<input type="hidden" value="<%=quizId%>" id="quizId" >
+ 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-with-addons.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-dom.js"></script>
+
+
+<script src="/literallycanvas/js/literallycanvas.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="/js/libs/socket-client.io.js"></script>
+
+<script>
+	 
+	$(document).ready(function(){
+		let outputEle = document.getElementById('output');
+		let socketUrl = $("#socketUrl").val();
+		let quizId = $("#quizId").val();
+		socket = io.connect(socketUrl);
+
+		socket.on('connect_error', function (err) {
+			socket.disconnect();
+			alert('Unable to connect to the live quiz.Please check your Internet connection or refresh this page !!');
+			location.reload();
+        });
+
+		let output = LC.init(outputEle,{
+				toolbarPosition:'hidden',
+				keyboardShortcuts: false,
+				tools:[
+				  LC.tools.Pan
+				]
+		});
+
+		
+		socket.emit('join_lqWhitBoard',{
+			quizId:quizId
+		},function(data){
+		  if(data.status){
+				setTimeout(()=>{
+					output.loadSnapshot(data.snapshot);
+				},1000);
+		  } 
+		});
+
+		socket.on('lqWhitboardOnChange',function(resData){
+			
+		  setTimeout(()=>{
+			output.loadSnapshot(resData);
+		  },1000);
+		  
+        })
+
+
+	  
+	});
+	
+	
+	
+	
+</script>
+</body>
+</html>

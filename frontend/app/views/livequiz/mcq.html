@@ -1,0 +1,28 @@
+<div class="card mtResp">	
+	<div class="card-content">
+		<div ng-show="checkInScoreMode()">
+			<div class="alert alert-warning" ng-show="filteredQuestions.type!='info' && !isAttempt">
+				<i class="fa fa-lg fa-info-circle"></i>	{{lang.caption_lq_notAttempt}}
+			</div>
+			 <div class="alert {{correctAnsGiven?'alert-success':'alert-danger'}}" ng-show="filteredQuestions.type!='info' && isAttempt">
+				<i class="fa fa-lg {{correctAnsGiven?'fa-check-circle':'fa-times-circle-o'}}"></i> {{ correctAnsGiven?lang.msg_correctAns:lang.msg_incorrectAns}}
+			</div>
+	    </div>
+
+		<div class="typo-line">
+			<span math="{{filteredQuestions.object.question}}"></span>
+		</div>
+		<br>
+		<div id="mcqOptions" class="options" style="padding-bottom:5px;">
+			<div ng-repeat="option in filteredQuestions.object.options">
+				<div class="qusOptions">
+					<input id="{{option.Id}}" type="checkbox" ng-model="filteredQuestions.object.options[$index].Selected" ng-change="onSelect(filteredQuestions, option,option.Id);" ng-disabled="checkInReviewMode()"
+					/>  
+					<label for="{{option.Id}}">
+						<span math={{option.statement}}></span>
+					</label>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,163 @@
+<div class="pageLoader"></div>
+
+<div class="newlbg"></div>
+
+	<nav class="navbar navbar-inverse navbar-fixed-top  navBG">
+		<div class="container-fluid">
+			
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" >
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar bar1"></span>
+					<span class="icon-bar bar2"></span>
+					<span class="icon-bar bar3"></span>
+				</button>
+				<a class="navbar-brand newBrand" href="#">Examineer</a>
+			</div>
+		
+		
+			<ul class="nav navbar-nav navbar-right">
+				<li ><a>{{lang.caption_student}}</a></li>
+				<li><a href="{{configData.authorUrl}}">{{lang.caption_author}}</a></li>
+				
+			</ul>
+		</div>
+	</nav>
+
+
+
+
+<div class="container-fuild" id="newlogin">
+			<div class="row">
+				<div  class="col-lg-9 col-md-8 col-sm-6 col-xs-12 imgDiv">
+						<img src="assets/img/student.png" id="stdImg" class="img-responsive img-center" alt="Image">
+
+						<img src="assets/img/logo.png" id="imglogo" class="img-responsive" alt="Image" >
+				</div>
+				<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12 loginFrmDiv">
+					
+
+					<img src="assets/img/logo.png" id="mainLogo"  class="img-responsive logo" alt="Image">
+
+						<br>
+					<h3 class="text-center">
+						Sign in to quiz
+					</h3>
+
+					
+						<form  name="loginForm" class="lgFrm" autocomplete="off">	
+								<div class="group">
+									<input type="text" id="quizId" style="text-transform: uppercase;" name="quizId" ng-model="user.quizId" ng-keypress="onInputChange($event)" required/><span class="highlight"></span><span class="bar"></span>
+									<label>{{lang.caption_quizid}}</label>
+								</div>
+								<div class="group">
+									<input type="text" name="uname" id="uname" ng-model="user.uname"  ng-keypress="onInputChange($event)" required/><span class="highlight"></span><span class="bar"></span>
+									<label>{{lang.caption_username}}</label>
+								</div>
+								<div class="group">
+									<input type="password" id="pwd" name="pwd" ng-keypress="onInputChange($event)" ng-model="user.pwd" required /><span class="highlight"></span><span class="bar"></span>
+									<label>{{lang.caption_password}}</label>
+									<div class="eye-btn">
+										<i id="eyeIcon" class="fa fa-eye viewPas"></i>
+									</div>
+									<span class="capson-msg">
+										{{ lang.caption_caps_lock}}
+									</span>
+								</div>
+
+								<div class="text-center">
+									<button class="btn btn-block btn-fill btn-default loginBtn" type="button" ng-click="getlogin()" ng-disabled="loginForm.uname.$invalid || loginForm.pwd.$invalid || loginForm.quizId.$invalid || logReq">
+									<span ng-show="logReq"><i class="fa fa-circle-o-notch fa-fw fa-spin"></i> </span> Login</button>
+								</div>
+								
+								<div class="text-center" style="margin-top:20px;" >
+										<a href="#"
+											data-toggle="modal" data-target="#fireFoxMdl"
+											id="firefoxHelpLink"
+											data-backdrop="static"
+											class="bowerLink">
+											{{ lang.caption_login_troubleshoot}}
+									    </a>
+
+										<a ng-href="/#getCredential" style="display: block;" class="bowerLink">
+										  {{ lang.caption_retreive_credential }}
+										</a>
+
+										
+
+								</div>
+
+							
+
+								<div class="text-center">
+									<a href='https://play.google.com/store/apps/details?id=examineer.product.quiz&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' style="width: 150px;" src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png'/></a>
+								</div>
+						</form>
+					
+
+					<div class="text-center">
+						&copy;<span id="logcurrentYear"></span> examineer.in
+					</div>
+				</div>
+			</div>
+</div>
+
+
+
+<div ng-include="'app/views/languageModal.html'"></div>
+
+
+<div class="modal fade" id="fireFoxMdl" role="dialog">
+	<div class="modal-dialog ">
+
+	  <div class="modal-content">
+		<div class="modal-header">
+		  <button type="button" class="close" data-dismiss="modal">&times;</button>
+		  <h4 class="modal-title">Trouble logging in Firefox</h4>
+		  <hr>
+		</div>
+		<div class="modal-body">
+		  <p>
+			  If you face trouble logging in, try the steps below 
+		  </p>
+
+			<ol>
+			  <li>
+				   Open a different tab of your Firefox browser  and visit <a href="javascript:void(0);"> about:config</a> 
+			  </li>
+			  <li>
+				  Search <strong>network.http.sendOriginHeader</strong> and set the value to <strong>1</strong>
+			  </li>
+			  <li>
+				  After setting above value,please refresh this page.
+			  </li>
+
+			  <li>
+					If you have already done the above setting, you can skip these steps.
+			 </li>
+
+
+			</ol>
+
+			<div class="text-center">
+					<img ng-src="assets/img/firefoxSetting.gif" class="img-responsive" alt="Help image not load">
+			</div>
+		</div>
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-default" data-dismiss="modal">Skip</button>
+		</div>
+	  </div>		  
+	</div>
+</div>
+
+<style>
+@media (max-width: 992px) {
+	ul.navbar-nav{
+		display: none;
+	}
+
+}	
+</style>
+
+
+ 

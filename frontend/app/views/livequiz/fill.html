@@ -1,0 +1,36 @@
+
+<div id="qusBlock" class="card mtResp">
+		<div class="card-content" ng-init="initNumOfFillins()">
+
+			<div ng-show="checkInScoreMode()">
+				<div class="alert alert-warning" ng-show="filteredQuestions.type!='info' && !isAttempt">
+					<i class="fa fa-lg fa-info-circle"></i>	{{lang.caption_lq_notAttempt}}
+				</div>
+				 <div class="alert {{correctAnsGiven?'alert-success':'alert-danger'}}" ng-show="filteredQuestions.type!='info' && isAttempt">
+					<i class="fa fa-lg {{correctAnsGiven?'fa-check-circle':'fa-times-circle-o'}}"></i> {{ correctAnsGiven?lang.msg_correctAns:lang.msg_incorrectAns}}
+				</div>
+			</div>
+			
+		
+			<div ng-if="sectData.partialGrading && quizMode =='quiz' && numFillIns>1" class="text-warning bold">
+				<i class="fa fa-info-circle"></i>  {{ lang.msg_partialBlanksLQ }}  
+			</div>	
+
+		  <div class="typo-line">
+			<span math="{{filteredQuestions.object.question}}"  ng-show="filteredQuestions.object.question!==''"></span>
+		  </div>
+		  <br>
+		  <div class="fillInOption">
+
+			<div class="options" style="padding-bottom:5px;">
+			  <div id="fillinStatement" class="fillin-statement">
+				<span compile="{{filteredQuestions.object.statement}}"> </span>
+			  </div>
+			  <div class="fillInOption fillin-suggestion" ng-show="filteredQuestions.object.suggestion!==''">
+				<span math="{{filteredQuestions.object.suggestion}}"> </span>
+			  </div>
+			</div>
+		  </div>
+		</div>
+		
+</div>

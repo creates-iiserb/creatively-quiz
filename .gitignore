@@ -17,3 +17,5 @@ realTimeServer/services/configEnv.js
 frontend/services/configEnv.json
 socketServer/services/configEnv.js
 liveQuizServer/services/configEnv.js
+
+.DS_Store

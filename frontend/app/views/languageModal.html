@@ -1,0 +1,39 @@
+
+<div class="modal fade" id="langModal" role="dialog">
+		<div class="modal-dialog">
+		  <div class="modal-content">
+			<div class="modal-header">
+			  <button type="button" class="close" data-dismiss="modal">&times;</button>
+			 <strong> {{ lang.caption_choose_language}} </strong>
+			</div>
+			<div class="modal-body">
+			  
+			  <fieldset>
+				<div class="form-group">           
+				<div class="col-sm-12">
+				  <div class="radio">
+					<input type="radio" name="radioLang" id="radioLang1"  ng-click="changeLanguage('default')" ng-checked="currentLang('default')">
+					<label for="radioLang1">
+					  English 
+					</label>
+				  </div>
+	
+				  <div class="radio">
+					<input type="radio" name="radioLang" id="radioLang2"  ng-click="changeLanguage('hindi')" ng-checked="currentLang('hindi')">
+					<label for="radioLang2" >
+					  हिन्दी  
+					</label>
+				  </div>
+				</div>
+				</div>
+			  </fieldset>
+			 
+			</div>
+		  </div>
+		</div>   
+</div> 
+
+	
+<div class="side-icon-bar">
+        <a data-toggle="modal"  data-target="#langModal" title="{{ lang.caption_choose_language}}" class="language cursorPointer"><i class="fa fa-language"></i></a>
+</div>

@@ -1,0 +1,998 @@
+<style>
+
+  
+ 
+  *{
+    -ms-overflow-style: none !important;
+    -ms-overflow-style: none; 
+  }
+
+
+</style>
+
+<div class="pageLoader"></div>
+<div id="autosave" class="alert alert-success fade in navbar-fixed-top autosave"></div>
+<div id="timealert" class="alert alert-warning fade in navbar-fixed-top timealert"></div>
+
+<div class="wrapper" ng-show="isLoad">
+  <div class="sidebar custsidebar" data-background-color="white" data-active-color="danger">
+
+    <div class="logo" style="background-color: #66615b; ">
+      <a href="javascript:void(0);" class="simple-text logo-mini" style="color:white; ">
+        EX
+      </a>
+
+      <a href="javascript:void(0);" class="simple-text logo-normal bold" style="color:white; ">
+        &nbsp; &nbsp; &nbsp; &nbsp; {{ lang.caption_examineer }}
+      </a>
+    </div>
+    <div class="sidebar-wrapper">
+      <div class="user">
+        <div class="photo">
+          <img onerror="onImgLoadError(this)" ng-src="https://robohash.org/{{rsgetData('USER')}}{{rsgetData('QUIZID')}}?set=set2&&bgset=bg2&&size=90x90" />
+        </div>
+        <div class="info">
+          <a data-toggle="modal" data-target="#userDetails">
+            <span style="text-align: center;font-size: 16px;">
+              <b title="{{rsgetData('USER')}}">{{rsgetData('USER') | textTrim:15 }}</b>
+              
+              <b ng-show="showExitBtn()">
+                  <br>
+                {{lang.caption_section}} {{ sectionNumber }}
+              </b>
+            </span>
+          </a>
+          
+          <div class="clearfix"></div>
+        </div>
+      </div>
+      <div class="clock text-center">
+        <span id="showtime"  ng-click="timerToggle()">
+          <span ng-hide="{{rsgetData('ATTEMPT')}}">{{hh}}:{{mm}}:{{ss}} </span>
+          <span ng-show="{{rsgetData('ATTEMPT')}}">{{completeTimeTaken}}</span>
+        </span>
+        <span id="timealertblock"></span>
+        <div style="font-size: 12px;">
+          <i class="fa fa-clock-o" aria-hidden="true"></i> {{lang.caption_timer}} &nbsp;&nbsp;
+        </div>
+      </div>
+      <ul class="nav mT0IMPpx">
+        <li class="padTB0px">
+          <br>
+          <table class="table gridQues" border="0" align="center">
+            <tbody>
+              <tr>
+                <td ng-repeat="qus in gridRow1" class="bx {{lock[qus-1]==true ? 'locked' :'none'}} {{(qus==currentPage) ? 'current-pointer':'none'}}"
+                  ng-click="getStartTime(qus);getEndTime(currentPage);getTotalTime(currentPage);goTo(qus);setGridCenter(qus);hideAll();resetAll();verifyToken();chkQusLock();">
+                  {{qus}}
+                  <sup id="flag" ng-show="checkReview(qus)"> &#9873;</sup>
+                </td>
+              </tr>
+              <tr>
+                <td ng-repeat="qus in gridRow2" class="{{lock[qus-1]==true ? 'locked' :'none'}} {{(qus==currentPage) ? 'current-pointer':'none'}}"
+                  ng-click="getStartTime(qus);getEndTime(currentPage);getTotalTime(currentPage);goTo(qus);setGridCenter(qus);hideAll();resetAll();verifyToken();chkQusLock();">
+                  {{qus}}
+                  <sup id="flag" ng-show="checkReview(qus)"> &#9873;</sup>
+                </td>
+              </tr>
+              <tr>
+                <td ng-repeat="qus in gridRow3" class="{{lock[qus-1]==true ? 'locked' :'none'}} {{(qus==currentPage) ? 'current-pointer':'none'}}"
+                  ng-click="getStartTime(qus);getEndTime(currentPage);getTotalTime(currentPage);goTo(qus);setGridCenter(qus);hideAll();resetAll();verifyToken();chkQusLock();">
+                  {{qus}}
+                  <sup id="flag" ng-show="checkReview(qus)"> &#9873;</sup>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="qus-info-bar">
+            <span class="pull-left qus-number">{{currentPage}} of {{questions.length}}</span>
+            <i class="fa fa-th-list pull-right list-more" data-toggle="modal" data-target="#allItems" title="All Items" aria-hidden="true"></i>
+            <div class="clearfix"></div>
+          </div>
+        </li>
+        <li class="padT0px">
+
+
+          
+          <div class="row btnGridContainer">
+            <div class="col-md-6 col-xs-6 btnGrids {{hintUsed[currentPage-1]>=1 ? 'help-used': 'none'}}" ng-show="{{helpAllowed<=2&&helpAllowed>0}}" id="hint-btn" ng-click="showHint(currentPage);" >
+                {{lang.caption_hint}}
+            </div>
+            <div class="col-md-6 col-xs-6 btnGrids {{hintUsed[currentPage-1]==2 ? 'help-used': 'none'}}" ng-show="{{helpAllowed==2}}" id="explanation-btn" ng-click="showExplanation(currentPage)" >
+                {{lang.caption_explanation}}
+              </div>
+              <div class="col-md-6 col-xs-6 btnGrids" ng-show="{{rsgetData('ATTEMPT')}}" ng-click="score();">{{lang.caption_ans}}
+                </div>
+
+                <div class="col-md-6 col-xs-6 btnGrids {{checkReview(currentPage) ? 'flagged': 'none'}}" ng-hide="{{rsgetData('ATTEMPT')}}" id="flag-btn" ng-click="doReview(currentPage)" >{{lang.caption_flag}} 
+                  </div>
+
+                <div class="col-md-6 col-xs-6 btnGrids {{lock[currentPage-1]==true ? 'locked':'none'}}" id="lock-btn" ng-click="Lock()" >
+                   
+                    {{lock[currentPage-1]==true?lang.caption_clickUnlock:lang.caption_clickLock}}
+                </div>  
+
+
+                <div class="col-md-6 col-xs-6 btnGrids"  data-toggle="modal" data-target="#secInstuction">{{lang.caption_instruction}}
+                </div>
+
+                <div class="col-md-6 col-xs-6 btnGrids" ng-hide="showSubmitBtn()" data-toggle="modal" data-target="#submitMore" ng-click="timeSpent();">{{lang.caption_submitMore}}
+                </div>
+
+                
+                 <div class="col-md-6 col-xs-6 btnGrids" ng-show="calculatorType()"  ng-click="calc();">
+                    {{lang.caption_calculator}}
+                 </div>
+                 
+                 <div class="col-md-6 col-xs-6 pad0px" ng-show="showExitBtn()" >
+                    <button id="exitSec" class="btn btn-default quizCtrlBtn" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> {{lang.caption_exitSect}}" ng-click="saveAndExit()" type="button" >
+                        {{lang.caption_exitSect}} 
+                    </button> 
+                 </div>  
+
+                 <div class="col-md-6 col-xs-6 btnGrids" ng-show="{{rsgetData('ATTEMPT') && (!rsgetData('ISSECTION') || sections.length==1)  }}" ng-click="goToSummary();">
+                  {{ lang.caption_summary }}
+                </div>
+
+                <div class="col-md-6 col-xs-6 btnGrids" ng-show="{{rsgetData('ATTEMPT') && (!rsgetData('ISSECTION') || sections.length==1)  }}" ng-click="loggedOut();">
+                  {{lang.caption_exit}}
+                </div>
+
+          </div>
+         
+
+        </li>
+      </ul>
+    </div>
+  </div>
+
+
+  <div class="main-panel autoHeight">
+
+    <nav class="navbar navbar-default navbar-fixed">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-5">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar bar1"></span>
+                <span class="icon-bar bar2"></span>
+                <span class="icon-bar bar3"></span>
+              </button>
+              <a class="navbar-brand" href="javascript:void(0);">
+                <span class="info-marker-qus">{{currentPage}}</span> {{questions[currentPage-1].type | qTypeUpper}}</a>
+            </div>
+          </div>
+
+          <div class="col-md-7 pull-right">
+            <table class="main-panel-table pull-left">
+              <tr>
+                <td style="padding:5px 0;">
+                  <div>
+                    <span ng-hide="{{rsgetData('ATTEMPT')}}" class="cursorPointer {{checkReview((currentPage)) ? 'info-marker-flag': 'info-marker-default'}}" ng-click="doReview(currentPage)">
+                      <i class="fa fa-flag"></i>
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <div>
+                    <span class="cursorPointer {{lock[currentPage-1]==true ? 'info-marker-lock' :'info-marker-default'}}" id="topLockIcon" ng-click="Lock()">
+                      <i class="{{lock[currentPage-1]==true ? 'fa fa-lock' :'fa fa-unlock'}}"></i>
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            </table>
+            <table class="main-panel-table pull-right">
+              <tr>
+                <td>
+                  <button type="button" class="btn btn-default btn-fill btn-move-left btn-pre-nxt" ng-click="onLeft(currentPage,currentPage-1);preQus();hideAll();resetAll();verifyToken();chkQusLock();" ng-disabled="currentPage==1">
+                    
+                    <span class="btn-label">
+                      <i class="ti-angle-left"></i>
+                    </span>
+                  </button>
+                </td>
+                <td>
+                  <button type="button" class="btn btn-default btn-fill btn-move-right btn-pre-nxt" ng-click="onRight(currentPage,currentPage+1);nextQus();hideAll();resetAll();verifyToken();chkQusLock();" ng-disabled="currentPage==totalItems" >
+                    <span class="btn-label">
+                      <i class="ti-angle-right"></i>
+                    </span>
+                  </button>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </nav>
+   
+
+    <div class="content quiz-content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-xs-12 col-md-10 col-md-offset-1">
+            <br>
+            <div ng-include src="getQuestionTemplateName(currentPage)"></div>
+          </div>
+        </div>
+        <div id="quiz-info" class="row">
+         
+
+         
+          <div id="quiz-ans"  class="col-md-12 col-md-10 col-md-offset-1 hide-instruction">
+            <div class="card">
+              <div class="card-header">
+                <div class="clear-fix">
+                  <div class="pull-left">
+                    <h4 class="card-title">
+                      <b>{{lang.caption_ans}}</b>
+                    </h4>
+                  </div>
+                  <div class="pull-right">
+                    <span style="cursor:pointer;" class="label label-default" ng-click="closeInfo('quiz-ans')">&#10006;</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card-content">
+                <br>
+                <hr>
+                <div class="help-content">
+                
+                  <div ng-show="scoreDetails[currentPage-1].type!='info'">
+                     
+                      <div ng-show="scoreDetails[currentPage-1].type!='sub'" style="margin-top: 15px;" class="row">
+                       
+                        <div class="col-md-3 padLR0px bold lh1_5em f14px" ng-show="hasGradIndex[currentPage-1]">
+                          <div class="text-success" ng-show="correctAnsGiven[currentPage-1]=='correct'">
+                            <i class="fa fa-check-circle"></i>	{{ lang.caption_correctAns }}
+                          </div>
+  
+                          <div class="text-warning" ng-show="correctAnsGiven[currentPage-1]=='skipped'">
+                            <i class="fa  fa-info-circle"></i>	{{ lang.caption_skippedQus }}
+                          </div>
+  
+                          <div class="text-danger" ng-show="correctAnsGiven[currentPage-1]=='incorrect'">
+                            <i class="fa  fa-times-circle-o"></i>	{{ lang.caption_incorrectAns }}
+                          </div>
+                        </div>
+
+                        <div class="col-md-3 padLR0px text-primary bold  lh1_5em f14px" ng-show="sectData.helpAllowed>0 && (hintUsed[currentPage-1]>0 && hintUsed[currentPage-1]<=2)">
+                          <i class="fa fa-lightbulb-o"></i> {{ lang.caption_hintUsed }}
+                        </div>
+
+                        <div class="col-md-3 padLR0px text-success bold lh1_5em f14px" ng-show="sectData.helpAllowed==2 && hintUsed[currentPage-1]==2">
+                          <i class="fa fa-book"></i> {{ lang.caption_expUsed }}
+                        </div>
+
+                      </div>
+
+                    
+                      <div ng-show="scoreDetails[currentPage-1].type=='sub'" class="row"   style="margin-top: 15px;">
+                        
+                        <div class="col-md-3 padLR0px bold lh1_5em f14px">
+                          <div class="text-primary" ng-show="scoreDetails[currentPage-1].lock">
+                            <i class="fa  fa-thumbs-o-up"></i>	{{ lang.caption_ques_attempted }}
+                          </div>
+  
+                          <div class="text-warning" ng-show="!scoreDetails[currentPage-1].lock">
+                            <i class="fa  fa-info-circle"></i>	{{ lang.caption_skippedQus }}
+                          </div>
+                        </div>
+
+                        <div class="col-md-3 padLR0px text-primary bold lh1_5em f14px" ng-show="sectData.helpAllowed>0 && (hintUsed[currentPage-1]>0 && hintUsed[currentPage-1]<=2)">
+                          <i class="fa fa-lightbulb-o"></i> {{ lang.caption_hintUsed }}
+                        </div>
+
+                        <div class="col-md-3 padLR0px text-success bold lh1_5em f14px" ng-show="sectData.helpAllowed==2 && hintUsed[currentPage-1]==2">
+                          <i class="fa fa-book"></i> {{ lang.caption_expUsed }}
+                        </div>
+                      </div>
+                      
+
+                        <p style="margin-top: 10px;">
+                          <b>{{lang.caption_scoreObtained}}:</b>
+                          {{scoreDetails[currentPage-1].score  }}
+                          <strong ng-show="scoreDetails[currentPage-1].type=='fillIn' && allowPartialGrading && scoreDetails[currentPage-1]['partial']!=0 " class="text-small text-warning">( {{  lang.msg_ScorePartialGrading  }} )</strong>
+                        </p>
+                       
+                        <p>
+                          <b>{{lang.caption_correctAnswer}}:</b>
+                          <span ng-show="{{rsgetData('ATTEMPT')}}" math="{{scoreDetails[currentPage-1].correctAns}}"></span>
+                        </p>
+                  </div>
+
+                  <div ng-show="scoreDetails[currentPage-1].type=='info'">
+                    <br>
+                      <p>
+                          <b>{{lang.caption_infoInfo}}</b>                         
+                      </p>                       
+                  </div>
+
+                  <div ng-show="((allowStats || reqBy =='auth' ) && statistics[qref] !=='na' && statistics[qref].gradingIndexExists)">
+                    <h5 class="bold marB10px"> {{ lang.caption_class_statistics
+                    }}</h5>
+                     <hr>
+
+                    <div class="fx-row-guage mrB18px" id="fxRowGuage">
+
+                      <div>
+                        <div id="canvasguagetimeGraph"></div>
+                        <div class="summLable">
+                          <div class="yours">
+                            <strong>You took : {{ statistics[qref].userTimeTaken | secondToString }}</strong>
+                          </div>
+                          <div class="average">
+                            <strong>Average : {{ statistics[qref].averagetime | secondToString }}</strong>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <div id="canvasguagescoreGraph"></div>
+                        <div class="summLable">
+                          <div class="yours">
+                            <strong>You score : {{ statistics[qref].userScore }}</strong>
+                          </div>
+                          <div class="average">
+                            <strong>Average : {{ statistics[qref].averagescore }}</strong>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+
+                    <div class="row" >
+                      <div class="col-lg-8 col-xs-12" id="quiz-hintExpDiv">
+                      </div>
+                      <div class="col-lg-4 col-xs-12" id="quiz-answerDiv">
+                      </div>
+                    </div>
+
+                    
+                  </div>
+                  
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>  
+
+<div class="modal fade" id="submitMore" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{ lang.caption_sumbitAndMore }}</h4>
+      </div>
+      <div class="modal-body" align="center">
+        <button class="btn btn-info btn-fill btn-wd" ng-click="onFinish(currentPage);saveResponse('save','manualSave');" data-dismiss="modal">{{lang.caption_save}}</button>
+        <button class="btn btn-success btn-fill btn-wd"  ng-click="onFinish(currentPage);getSummary();" data-toggle="modal" data-target="#submit"
+          data-dismiss="modal"> {{lang.caption_submit}} </button>
+        <button class="btn btn-danger btn-fill btn-wd" ng-click="onFinish(currentPage);saveResponse('exit','beforePlainExit');" data-dismiss="modal">{{lang.caption_exit}}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="allItems" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{lang.caption_allitems}}</h4>
+      </div>
+      <div class="modal-body" align="center">
+        <table class="table table-hover" border="0">
+          <tr  ng-repeat="item in questions">
+             
+            <td width="50" class="all-items-index {{lock[$index]==true ? 'locked-ForAllitme' :'none'}}">{{$index+1}}
+              <sup id="flag" ng-show="checkReview($index+1)"> &#9873;</sup>
+            </td>
+            <td ng-click="getStartTime($index+1);getEndTime(currentPage);getTotalTime(currentPage);goTo($index+1 );setGridCenter($index+1);hideAll();resetAll();verifyToken();chkQusLock();"
+              data-dismiss="modal">  <span class="label label-info">{{item.type}}</span>
+              <span  ng-show="item.type=='fillIn'" mathlimit="{{item.object.statement}}"></span>
+              <span  ng-show="item.type=='info'" mathlimit="{{item.object.header}}"></span>
+              <span  ng-show="item.type=='arrange' " mathlimit="{{item.object.question}}"></span>
+              <span  ng-show="item.type=='mcq' " mathlimit="{{item.object.question}}"></span>
+              <span  ng-show="item.type=='sub' " mathlimit="{{item.object.question}}"></span>
+              ...
+            </td>           
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div id="submit" class="modal fade" role="dialog" style="overflow-y: scroll !important;">
+  <div class="modal-dialog">
+    
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h5 class="modal-title"> {{lang.caption_quizSummary}} </h5>
+      </div>
+      <div class="modal-body">
+         
+        <ul class="list-unstyled team-members">
+						<li>
+							<div class="row">
+								<div class="col-xs-9">
+									<h5>{{lang.caption_qusAttempted}}</h5>
+								</div>
+								<div class="col-xs-3">
+									<h5><b>{{summary[1]}}</b></h5>
+								</div>
+              </div>
+              <hr>
+						</li>
+						<li>
+							<div class="row">
+								<div class="col-xs-9">
+									<h5>{{lang.caption_qusSkipped}}</h5>
+								</div>
+								<div class="col-xs-3">
+									<h5><b>{{summary[0]}}</b></h5>
+								</div>
+              </div>
+              <hr>
+						</li>
+						<li>
+							<div class="row">
+								<div class="col-xs-9">
+									<h5>{{lang.caption_timeTaken}}</h5>
+								</div>
+								<div class="col-xs-3">
+									<h5><b>{{timeTakenToComplete}}</b></h5>
+								</div>
+              </div>
+              <hr>
+						</li>
+					</ul>
+<br>
+        <div class='text-center'>
+         
+          <h5>{{ lang.caption_submitWarning }}</h5>
+          <div style="display: flex; justify-content: center">
+            <button class="btn btn-success btn-fill btn-wd pull-left" id="myHint" ng-disabled="isSubmitClick" ng-click="submitQuizWithConfirm();" data-dismiss="modal">{{ !isSubmitClick ? lang.caption_submit : lang.caption_wait }}</button>
+           
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<div class="modal fade" id="userDetails" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body pad0px">
+        <button type="button" class="close mdl-closeBtn" data-dismiss="modal">&times;</button>
+        <div class="card card-user mr0px">
+          <div class="image" style="border-radius: 4px 4px 0 0;">
+            <img src="assets/img/bgimg.jpg" alt="..." >
+          </div>
+          <div class="card-content mr0px" style="min-height: 175px !important;">
+            <div class="author">
+              <img onerror="onImgLoadError(this)" class="avatar border-white" src="https://robohash.org/{{rsgetData('USER')}}{{rsgetData('QUIZID')}}?set=set2&&bgset=bg2&&size=90x90"
+                alt="Image">
+              <h4 class="card-title">
+                  {{ lang.caption_user }} :
+                {{ rsgetData('USER')}}
+                <br>
+              </h4>
+              <h4 class="card-title">
+                  {{ lang.caption_quizid }} :
+                {{rsgetData('QUIZID')}}
+              </h4>
+              <b style="font-size: 1.3em;"> ({{ QUIZTITLE }})</b>
+
+              <br>
+              <b class="disBlock" ng-show="showUserDetail('A')"> {{userDetail.A}}  </b>
+              <b class="disBlock" ng-show="showUserDetail('B')"> {{userDetail.B}}  </b>
+              <b class="disBlock" ng-show="showUserDetail('C')"> {{userDetail.C}}  </b>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+<div ng-include="'app/views/languageModal.html'"></div>
+
+<div class="modal fade" id="secInstuction" role="dialog">
+    <div class="modal-dialog modal-lg">
+
+      
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"> {{lang.caption_instruction}}</h4>
+        </div>
+        <div class="modal-body">
+                <h3 class=" text-center quiz-head">{{ QUIZTITLE }} </h3>
+                <div class="text-center">
+                  <span class="label label-success">{{ lang.caption_quizid }} - {{rsgetData('QUIZID')}}</span>
+                </div>
+                  <span math="{{instruction}}"></span>
+                  <div ng-show="{{rsgetData('ISSECTION')}}">
+                    <br>
+                    <h4 class="card-title marT5px">
+                     <strong ng-show="showExitBtn()">{{lang.caption_section}} {{sectionNumber}}:</strong> <strong> {{ sectData.secTitle }}</strong>
+                      <hr> </h4>
+                    <span math="{{sectData.instruction}}"></span>                    
+                  </div>
+                  <h4 class="card-title ">
+                    <strong>{{ lang.caption_timing }}</strong>
+                    <hr>
+                  </h4>
+                  <ul>
+                    <li>
+                      <p>
+                        <b>{{lang.caption_quizOpenedAt}}</b> {{bTime}}</p>
+                    </li>
+                    <li>
+                      <p>
+                        <b>{{lang.caption_deadline}}:</b> {{eTime}}</p>
+                    </li>
+                    <li>
+                      <p>
+                        <b>{{lang.caption_duration}}:</b> {{+DURATION==525600? lang.caption_na : +DURATION + lang.caption_min }}
+                      </p>
+                    </li>
+
+                    <li ng-if="sectData.partialGrading">
+                      <p class="bold text-warning">
+                         {{ sections.length == 1 ? lang.caption_partialInstrQuiz : lang.caption_partialInstrSec }}
+                      </p>
+                    </li>
+                  </ul>
+                  
+
+          <h4 class="card-title">
+            <strong>{{lang.caption_gradingScheme}}</strong>
+            <hr>
+          </h4>
+
+          <p>{{lang.msg_gradingScheme}} : </p>
+          <center>
+            <div class="table-responsive">
+              <table class="table table-center  grade-table">
+                <tr>
+                  <th width="160"></th>
+                  <th class="no-help-used" align="center"> &nbsp;{{lang.caption_noHelpUsed}}&nbsp; </th>
+                  <th class="hint-used" align="center" ng-show="{{sectData.helpAllowed<=2&&sectData.helpAllowed>0}}"> &nbsp;{{lang.caption_hintUsed}}&nbsp; </th>
+                  <th class="explanation-used" align="center" ng-show="{{sectData.helpAllowed==2}}"> &nbsp;{{lang.caption_expUsed}}&nbsp; </th>
+                </tr>
+                <tr>
+                  <td align="center">
+                    <b> {{lang.caption_correctAns}} </b>
+                  </td>
+
+                  <td class="no-help-used">{{sectData.gradingMatrix[0][0] }}</td>
+                  <td class="hint-used" ng-show="{{sectData.helpAllowed<=2&&sectData.helpAllowed>0}}">{{sectData.gradingMatrix[0][1]}}</td>
+                  <td class="explanation-used" ng-show="{{sectData.helpAllowed==2}}">{{sectData.gradingMatrix[0][2]}}</td>
+
+
+                </tr>
+                <tr>
+                  <td align="center">
+                    <b> {{lang.caption_skippedQus}} </b>
+                  </td>
+                  <td class="no-help-used">{{sectData.gradingMatrix[1][0]}}</td>
+                  <td class="hint-used" ng-show="{{sectData.helpAllowed<=2 && sectData.helpAllowed>0}}">{{sectData.gradingMatrix[1][1]}}</td>
+                  <td class="explanation-used" ng-show="{{sectData.helpAllowed==2}}">{{sectData.gradingMatrix[1][2]}}</td>
+                  
+                </tr>
+                <tr>
+                  <td align="center">
+                    <b> {{lang.caption_incorrectAns}} </b>
+                  </td>
+                  <td class="no-help-used">{{sectData.gradingMatrix[2][0]}}</td>
+                  <td class="hint-used" ng-show="{{sectData.helpAllowed<=2 && sectData.helpAllowed>0}}">{{sectData.gradingMatrix[2][1]}}</td>
+                  <td class="explanation-used" ng-show="{{sectData.helpAllowed==2}}">{{sectData.gradingMatrix[2][2]}}</td>
+                 
+                </tr>
+              </table>
+
+            </div>
+
+
+          </center>
+
+
+        </div>
+       
+      </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="mathDocMdl" role="dialog">
+  <div class="modal-dialog modal-lg">
+ 
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">{{ lang.msg_math_help }}</h4>
+      </div>
+      <div class="modal-body">
+        <iframe src="https://examineer.in/docs/mathHelp.html" height="450px" width="100%" title="Math Documentation"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+<div class="overlay-div">
+  <div class="row">
+    <br>
+    <div class="col-md-4 col-md-offset-4">
+      <div class="card card-user">
+        <div class="image">
+          <img src="assets/img/bgimg.jpg" alt="...">
+        </div>
+        <div class="card-content" style="min-height: 175px !important;">
+          <div class="author">
+            <img class="avatar border-white" onerror="onImgLoadError(this)" src="https://robohash.org/{{rsgetData('USER')}}{{rsgetData('QUIZID')}}?set=set2&&bgset=bg2&&size=90x90"
+              alt="...">
+            <h4 class="card-title">{{rsgetData('USER')}}
+              <br>
+            </h4>
+            <h4 class="card-title">{{rsgetData('QUIZID')}}
+            </h4>
+            <b>{{lang.msg_submitGrade}}</b>
+            <p>{{lang.msg_timeUp}}</p>
+            <div class="text-center">
+              <button class="btn btn-fill btn-wd btn-success" ng-disabled="submitBtnClick" ng-click="saveResponse('submit','beforeSubmit');">{{lang.caption_submit}}</button>
+              &nbsp; &nbsp;
+              <button class="btn btn-danger btn-fill btn-wd" ng-click="loggedOut()">{{lang.caption_logout}}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div id="calc"  >
+ 
+  <div class="row">
+    <div class="col-sm-12 calCloseBtn">
+        <button id="close" style="font-size:20px;" onclick="calcClose()">&times;</button>
+       
+        <span class="calHeading"> {{lang.caption_calculator}} </span>
+        <input type="hidden" id="calcType" name="calcType" value="{{calcType}}">
+    </div>
+    
+      
+   
+   
+  </div>
+
+ 
+  <div class="row">
+    <div class="col-sm-12">
+    <form name="calculator" id="calculator">
+      <div class="col-xs-12  padit">
+        <div id="output" style="cursor: pointer !important;"></div>
+        <hr>
+      </div>
+
+      <div class="col-xs-12  padit">
+        <textarea rows="3" type="text" name="display" id="display" autofocus onkeypress="evalOnEnter(event)"></textarea>
+      </div>
+    </form>
+    </div>
+  </div>
+
+  
+  <div class="row keys">
+    <div class="col-md-12 padit1" id="top-btn">
+      <button class="angles btn btn-warning" id="angles" ng-if="calcType=='scientific'" onclick="changeAngle()">DEG</button>
+      <button type="button" class="btn btn-danger" onclick="clearAll()">
+        <b>
+          <i class="fa fa-trash"></i>
+        </b>
+      </button>
+      <button type="button" id="button1" class="btn btn-danger" onclick="clearKey()">
+        <b>
+          <i class="fa fa-eraser"></i>
+        </b>
+      </button>
+      <button type="button" id="button3" class="btn btn-success" onclick="calculate()">
+        <b>&#9868;</b>
+      </button>
+      <button type="button" id="button2" class="btn btn-default" onclick="keypadToggle()">
+        <b>
+          <i class="fa fa-keyboard-o" aria-hidden="true"></i>
+        </b>
+      </button>
+    </div>
+  </div>
+
+
+  <div class="row keypad" style="display:none; ">
+    <div ng-if="calcType=='scientific'" class="col-sm-12">
+           
+    <table class="wid calc-table">
+        <tr class="key">
+          <td>
+            <button class="btn btn-dark cursor" value="asin()">sin
+              <sup>-1</sup>
+            </button>
+          </td>
+          <td>
+            <button class="btn btn-dark cursor" value="acos()">cos
+              <sup>-1</sup>
+            </button>
+          </td>
+          <td>
+            <button class="btn btn-dark cursor" value="atan()">tan
+              <sup>-1</sup>
+            </button>
+          </td>
+          <td>
+            <button class="btn btn-danger" id="del" value="DEL" onclick="del()">DEL</button>
+          </td>
+          <td>
+            <button class="btn btn-danger" id="clear" value="AC" onclick="clearKey()">AC</button>
+          </td>
+        </tr>
+  
+        <tr class="key">
+          <td>
+            <button class="btn btn-dark cursor" value="sin()">sin</button>
+          </td>
+          <td>
+            <button class="btn btn-dark cursor" value="cos()">cos</button>
+          </td>
+          <td>
+            <button class="btn btn-dark cursor" value="tan()">tan</button>
+          </td>
+          <td>
+            <button class="btn btn-dark cursor" value="sqrt()">&#8730;</button>
+          </td>
+          <td>
+            <button class="btn btn-dark cursor" value="cbrt()">&#8731;</button>
+          </td>
+        </tr>
+  
+        <tr class="key">
+          <td>
+            <button class="btn btn-dark cursor" value="exp()">e^x</button>
+          </td>
+          <td>
+            <button class="btn btn-dark cursor" value="log()">ln</button>
+          </td>
+          <td>
+            <button class="btn btn-dark cursor" value="log10()">log</button>
+          </td>
+          <td>
+            <input type="button" class="btn btn-dark pie" value=&#960; onclick="piVal()">
+          </td>
+          <td>
+            <button class="btn btn-dark cursor" value="factorial()">n!</button>
+          </td>
+        </tr>
+  
+        <tr class="key">
+          <td>
+            <button class="btn btn-dark cursor" value="square()">x&#178;</button>
+          </td>
+          <td>
+            <button class="btn btn-dark cursor" value="inv()">1/x</button>
+          </td>
+          <td>
+            <button class="btn btn-dark cursor" value="abs()">|x|</button>
+          </td>
+          <td>
+            <button class="btn btn-dark powten" value="pow(x,y)" onclick="toPower($(this).val())">x^y</button>
+          </td>
+          <td>
+            <button class="btn btn-dark powten" value="mod(x,y)" onclick="toMod($(this).val())">%</button>
+          </td>
+        </tr>
+      </table>
+    
+      <table class="wid calc-table">
+        <tr class="key">
+          <td>
+            <input type="button" class="btn btn-light posit" name="num" id="7" value="7">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="8" id="8" value="8">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="9" id="9" value="9">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="parenleft" id="parenleft" value="(">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="parenright" id="parenright" value=")"> </td>
+        </tr>
+  
+        <tr class="key">
+          <td>
+            <input type="button" class="btn btn-light posit" name="num4" id="4" value="4">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="5" id="5" value="5">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="6" id="6" value="6">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="mul" id="mul" value="*">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="div" id="div" value="/">
+          </td>
+        </tr>
+  
+        <tr class="key">
+          <td>
+            <input type="button" class="btn btn-light posit" name="num1" id="1" value="1">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="1" id="2" value="2">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="3" id="3" value="3">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="plus" id="plus" value="+">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="minus" id="minus" value="-">
+          </td>
+        </tr>
+  
+        <tr class="key">
+          <td>
+            <input type="button" class="btn btn-light posit" name="zero" id="zero" value="0">
+          </td>
+          <td>
+            <button class="btn btn-light posit" value="." name="dot" id="dot">.</button>
+          </td>
+          <td>
+            <button class="btn btn-light powten" value="pow(10,x)" onclick="toPower($(this).val())">EXP</button>
+          </td>
+          <td>
+            <input type="button" class="btn btn-light" name="answer" id="answer" value="ANS" onclick="ansKey()">
+          </td>
+          <td>
+            <input type="button" class="btn btn-success" name="calculate" id="calculate" value="=" onclick="calculate()">
+          </td>
+        </tr>
+      </table>
+
+    </div>
+
+    <div ng-if="calcType=='basic'" class="col-sm-12">
+
+    
+  
+      
+      <table class="wid calc-table">
+        <tr class="key">
+          <td>
+            <input type="button" class="btn btn-light posit" name="num" id="7" value="7">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="8" id="8" value="8">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="9" id="9" value="9">
+          </td>
+         
+          <td>
+              <button class="btn btn-danger" id="del" value="DEL" onclick="del()">DEL</button>
+            </td>
+            <td>
+              <button class="btn btn-danger" id="clear" value="AC" onclick="clearKey()">AC</button>
+            </td>
+
+        </tr>
+  
+        <tr class="key">
+          <td>
+            <input type="button" class="btn btn-light posit" name="num4" id="4" value="4">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="5" id="5" value="5">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="6" id="6" value="6">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="mul" id="mul" value="*">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="div" id="div" value="/">
+          </td>
+        </tr>
+  
+        <tr class="key">
+          <td>
+            <input type="button" class="btn btn-light posit" name="num1" id="1" value="1">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="1" id="2" value="2">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="3" id="3" value="3">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="plus" id="plus" value="+">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="minus" id="minus" value="-">
+          </td>
+        </tr>
+  
+        <tr class="key">
+          <td>
+            <input type="button" class="btn btn-light posit" name="zero" id="zero" value="0">
+          </td>
+          <td>
+            <button class="btn btn-light posit" value="." name="dot" id="dot">.</button>
+          </td>       
+          
+          <td>
+            <input type="button" class="btn btn-success" name="calculate" id="calculate" value="=" onclick="calculate()">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="parenleft" id="parenleft" value="(">
+          </td>
+          <td>
+            <input type="button" class="btn btn-light posit" name="parenright" id="parenright" value=")"> </td>
+        </tr>
+      </table>
+
+    </div>
+  </div>
+
+  <div style="clear:both;"></div>
+</div>
+
+
+<div id="overlay">
+    <div class='clear-fix'>
+      <div class='pull-right'>
+        &nbsp;
+        <button class="btn btn-fill btn-primary btn-sm " id="closeOverlay">
+          <i class='fa fa-close'></i> {{ lang.caption_cancel }}</button>
+      </div>
+    </div>
+    <iframe frameborder="0" id="overlayIframe"></iframe>
+</div>
+<script src="assets/js/paper-dashboard.js"></script>
+

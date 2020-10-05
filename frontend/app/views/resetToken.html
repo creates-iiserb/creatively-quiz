@@ -1,0 +1,34 @@
+
+<div class="pageLoader"></div>
+<div class="row"  ng-init="initReq()" ng-show="pageLoad">
+    <div class="col-md-4 col-md-offset-4" >
+        <div class="card mrT20per">
+                <div class="card-header text-center">
+                        <h3 class="card-title">Examineer</h3>
+                        <hr>
+                </div>
+                <div class="card-content text-center" ng-show="isValidReq==1">
+                        <p>
+                                You have reached the maximum limit of login limit. Your account is blocked. Click the below button to unblock your account. Only then you will be able to login. 
+                        </p>
+                            <button class="btn btn-primary btn-fill" ng-click="unblock()" ng-disabled="btnReq">Click here to unlock</button>
+                </div>
+               
+               
+                <div class="card-content text-center" ng-show="isValidReq==2">
+                        <h4>404</h4>
+                        <p>
+                            Invalid Request Url.Click  <a href="{{domainUrl}}" class="btn btn-primary btn-fill btn-xs" >Login</a> to login again.
+                        </p>
+                </div>
+                <div class="card-content text-center" ng-show="isValidReq==3">
+                        <p>
+                                Your account is unblocked. Click  <a href="{{domainUrl}}" class="btn btn-primary btn-fill btn-xs" >Login</a> to login again.
+                        </p>
+                </div>
+               
+        </div>
+    </div>    
+</div>
+
+

@@ -1,0 +1,36 @@
+
+<div id="qusBlock" class="card mtResp">
+		
+	<div class="card-content">
+		
+
+		<div ng-show="checkInScoreMode()">
+				<div class="alert alert-warning" ng-show="filteredQuestions.type!='info' && !isAttempt">
+					<i class="fa fa-lg fa-info-circle"></i>	{{lang.caption_lq_notAttempt}}
+				</div>
+				 <div class="alert {{correctAnsGiven?'alert-success':'alert-danger'}}" ng-show="filteredQuestions.type!='info' && isAttempt">
+					<i class="fa fa-lg {{correctAnsGiven?'fa-check-circle':'fa-times-circle-o'}}"></i> {{ correctAnsGiven?lang.msg_correctAns:lang.msg_incorrectAns}}
+				</div>
+		 </div>
+
+		
+
+		<div class="typo-line">
+			<span math="{{filteredQuestions.object.question}}"></span>
+		</div>
+		<br>
+		<div id="arrOptions" class="options" ng-init="sortListItems()">
+			<div ng-repeat="item in arrangeType" class="arrOptions" id="{{item}}">
+				<div class="arrangeOption">
+					<div class="arrangeContent">
+						<span math="{{filteredQuestions.object.items[item-1].stmt}}">
+					</div>
+					<div class="arrangeIcon">
+						<span class="ti-move"></span>
+					</div>
+					<div class="clearfix"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

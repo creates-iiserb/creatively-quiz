@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link href="/literallycanvas/css/literallycanvas.css" rel="stylesheet">
+	<style>
+		.alertDiv {
+			margin-bottom: 15px;
+			padding: 4px 12px;
+		}
+		.danger {
+			background-color: #ffdddd;
+			border-left: 6px solid #f44336;
+		}
+		.color-well:nth-child(2) {
+           display: none;
+        }
+		.lc-zoom {
+			display:none;
+		}
+	</style>
+</head>
+<body>
+
+   <%
+      if(!isServerError){
+		if(!invalidUrl){
+		%>
+
+			<div  class="alertDiv danger" id="alertMsg" style="display:none;">
+				<p><strong>Alert!</strong> <span id="alertSpan"></span></p>
+			</div>
+
+			<div id="inputWhieboard"></div>
+			
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-with-addons.js"></script>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-dom.js"></script>
+		
+			<script src="/literallycanvas/js/literallycanvas.js"></script>
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+			<script src="/js/libs/socket-client.io.js"></script>
+
+			<script>
+				let outputEle = document.getElementById('output');
+				$(document).ready(function(){
+					let socketUrl = "<%=lqUrl%>";
+					let quizId = "<%=quizId%>";
+					socket = io.connect(socketUrl);
+
+					
+
+					socket.on('connect_error', function (err) {
+						socket.disconnect();
+						alert('Unable to connect to the live quiz.Please check your Internet connection or refresh this page !!');
+						location.reload();
+					});
+
+					let inputWhieboard= LC.init(
+						document.getElementById('inputWhieboard'),{
+							imageURLPrefix: '/literallycanvas/img',
+							keyboardShortcuts: false,
+							tools:[
+								LC.tools.Pencil,
+								LC.tools.Eraser,
+								LC.tools.Text
+							],
+							imageSize: {
+								width:640,
+								height:360
+							}
+						}
+					);
+
+					function  lq_doAfterDrawAction(res){
+					   $("#alertMsg").hide();
+                       if(res!=="draw"){
+						   let msg = '';
+						   if(res=="notEnable"){
+							   msg = "Author do not enable whiteboard option.";
+						   }
+
+						   if(res=="notlive"){
+							   msg = "Quiz is not live.";
+							  
+						   }
+
+						   $("#alertSpan").text(msg);
+						   $("#alertMsg").show();
+
+					   }
+					}
+
+					inputWhieboard.on('drawingChange',()=>{
+						let snapshot = inputWhieboard.getSnapshot(['shapes', 'colors']);
+					
+						console.log(JSON.stringify(snapshot,null,2));
+
+						socket.emit('ath_lqWhiteBoard', {snapshot:snapshot,quizId:quizId}, function(res) {
+					
+						   lq_doAfterDrawAction(res);
+						});
+					});
+
+					inputWhieboard.on('clear',()=>{
+						let snapshot = inputWhieboard.getSnapshot(['shapes', 'colors']);
+						
+						socket.emit('ath_lqWhiteBoard', {snapshot:snapshot,quizId:quizId}, function(res) {
+					
+						   lq_doAfterDrawAction(res);
+						});
+					});
+
+				});
+
+			</script>
+
+
+		  <%
+		  }else{
+          %>
+
+		  <div  class="alertDiv danger" id="alertMsg">
+			<p><strong>Alert!</strong>
+			  You are requesting  invalid url.
+			</p>
+		  </div>
+		 <% }
+
+	  }else{
+		%>
+
+		<div  class="alertDiv danger" id="alertMsg">
+			<p><strong>Alert!</strong>
+				Something went wrong. Please try after sometime.
+			</p>
+		  </div>
+		
+		<script>
+			setTimeout(()=>{
+					window.close();  
+			 },5000);
+		</script>
+
+    <%
+	  }  
+   %>
+
+	
+</body>
+</html>

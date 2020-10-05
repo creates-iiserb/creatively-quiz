@@ -1,0 +1,526 @@
+<div class="pageLoader"></div>
+<div class="container" ng-show="isLoad">
+	<br>
+	<br>
+	<br>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="card">
+				<div class="card-header">
+					<h3 class=" text-center quiz-head">{{rsgetData('QUIZID')}} : {{ QUIZTITLE }} </h3>
+					<div class="text-center">
+							<blockquote class="blockquote authorName" ng-if="quizAutor">
+									<footer class="blockquote-footer byauthor"> {{lang.msg_by}}
+										<b><cite title="Source Title">{{quizAutor}}</cite></b>
+									</footer>
+							</blockquote>
+							<strong>{{lang.caption_username}} - </strong>{{rsgetData('USER')}}
+					</div>
+				
+				</div>
+				<div class="card-content">
+					<h4 class="card-title">
+						<strong>{{lang.caption_instruction}}</strong>
+						<hr> </h4>
+					<span math="{{instruction}}"></span>
+                    <div ng-if="showSecIntruction()">
+						<br>
+						<span math="{{ sections[0].instruction }}"></span>
+					</div>
+					<br>
+					<br>
+
+					
+					<div  ng-if="sections.length==1">
+
+						<h4 class="card-title">
+							<strong>{{lang.caption_gradingScheme}}</strong>
+							<hr>
+						</h4>
+
+						<p>{{lang.msg_gradingScheme}} : </p>
+						<div class="table-responsive">
+							<table class="table table-center  grade-table">
+								<tr>
+									<th width="160"></th>
+									<th class="no-help-used" align="center"> &nbsp;{{lang.caption_noHelpUsed}}&nbsp; </th>
+									<th class="hint-used" align="center" ng-show="helpAllowed<=2 &&helpAllowed>0"> &nbsp;{{lang.caption_hintUsed}}&nbsp; </th>
+									<th class="explanation-used" align="center" ng-show="helpAllowed==2"> &nbsp;{{lang.caption_expUsed}}&nbsp; </th>
+								</tr>
+								<tr>
+									<td align="center">
+										<b> {{lang.caption_correctAns}}  </b>
+									</td>
+									<td class="no-help-used">{{grdCorrectAns[0]}}</td>
+									<td class="hint-used" ng-show="helpAllowed<=2 && helpAllowed>0">{{grdCorrectAns[1]}}</td>
+									<td class="explanation-used" ng-show="helpAllowed==2">{{grdCorrectAns[2]}}</td>
+								</tr>
+								<tr>
+									<td align="center">
+										<b> {{lang.caption_skippedQus}} </b>
+									</td>
+									<td class="no-help-used">{{grdSkippedAns[0]}}</td>
+									<td class="hint-used" ng-show="helpAllowed<=2 && helpAllowed>0">{{grdSkippedAns[1]}}</td>
+									<td class="explanation-used" ng-show="helpAllowed==2">{{grdSkippedAns[2]}}</td>
+									
+								</tr>
+								<tr>
+									<td align="center">
+										<b> {{lang.caption_incorrectAns}} </b>
+									</td>
+									<td class="no-help-used">{{grdWrongAns[0]}}</td>
+									<td class="hint-used" ng-show="helpAllowed<=2 && helpAllowed>0">{{grdWrongAns[1]}}</td>
+									<td class="explanation-used" ng-show="helpAllowed==2">{{grdWrongAns[2]}}</td>
+									
+								</tr>
+							</table>
+						</div>
+
+
+					</div>
+
+				
+					<h4 class="card-title">
+						<strong>{{ lang.caption_timing }}</strong>
+						<hr>
+					</h4>
+
+					<ul>
+						<li>
+							<p>
+								<b>{{lang.caption_quizOpenedAt}}</b> {{bTime}}</p>
+						</li>
+						<li>
+							<p>
+								<b>{{lang.caption_deadline}}:</b> {{eTime}}</p>
+						</li>
+						<li>
+							<p>
+								<b>{{lang.caption_duration}}:</b> {{ +DURATION==525600?lang.caption_na: +DURATION +' '+ lang.caption_min }}
+							</p>
+						</li>
+
+						
+
+						<li ng-if="sections.length==1 && sections[0].partialGrading">
+							<p class="bold">
+								 	{{ lang.caption_partialInstrQuiz }}
+							</p>
+						</li>
+					</ul>
+					<ul style="list-style: none; background-color:#f9ecd0; padding: 8px 0px 8px 0" class='text-warning'>
+						<li ng-show="loginTime=='actual'">
+							<div class="row">
+								<div class="col-xs-12 ">
+									<i class='fa fa-info-circle' style=" font-size: 16px;"></i>
+									<b style=" font-size: 16px;"> {{lang.msg_loginTimeActual}}</b>
+									
+
+									
+					<button class="btn btn-sm btn-danger btn-fill pull-right lH1" style="width: 83px" ng-click="loggedOut()">{{lang.caption_exit}}</button>
+
+								</div>
+							</div>
+
+						</li>
+						<li ng-show="loginTime=='absolute'">
+							<div class="row">
+								<div class="col-xs-12  ">
+									<i class="fa fa-info-circle" style=" font-size: 16px;"></i>
+
+									<b style=" font-size: 16px;" > {{lang.msg_loginTimeAbsolute}}</b>
+									
+					<button ng-show="!deadLineOver" class="btn btn-sm btn-danger btn-fill pull-right lH1" style="width: 83px" ng-click="loggedOut()">{{lang.caption_exit}}</button>
+
+								</div>
+							</div>
+							
+						</li>
+					</ul>
+
+
+					<ul style="list-style: none;  padding: 8px 0px 8px 0" class='text-info bg-info' ng-show="showSubmitBtnOnInst()">
+						<li >
+							<div class="row">
+								<div class="col-xs-12 ">
+									<i class="fa fa-graduation-cap"></i>
+                                  
+									<b style=" font-size: 16px;" ng-bind-html="meStartQuizMsg"></b>
+
+					<button type="button" ng-click="makeSummary()" class="btn btn-sm btn-info btn-fill pull-right  lH1">{{ lang.caption_submit }}</button>	
+
+								</div>
+							</div>
+
+						</li>
+					</ul>
+
+				
+					<ul style="list-style: none;  padding: 8px 0px 8px 0" class='text-danger bg-danger' ng-show="deadLineOver">
+						<li >
+							<div class="row">
+								<div class="col-xs-12 ">
+									<i class="ti-alert"></i>
+                                    
+									<b style=" font-size: 16px;"> {{ lang.msg_quiz_deadLineOver }} </b>
+									<button  class="btn btn-sm btn-danger btn-fill pull-right lH1" style="width: 83px" ng-click="loggedOut()">{{lang.caption_exit}}</button>
+								</div>
+							</div>
+						</li>
+					</ul>
+
+					
+					<ul style="list-style: none;  padding: 8px 0px 8px 0" class='text-info bg-info' ng-show="qdeadLineNotOverButNotYetStart">
+						<li >
+							<div class="row">
+								<div class="col-xs-12 ">
+									<i class="fa fa-info-circle"></i>
+									<b style=" font-size: 16px;"> {{ lang.msg_clickToFirstProceed
+									}} </b>
+								</div>
+							</div>
+						</li>
+					</ul>
+					
+                   
+                    <div class="row" ng-show="showTimer">
+                       <div class="col-md-12 text-center insClock">
+						<p class="insClockP">
+							{{ lang.caption_before_quizstart }}
+						</p>	
+							
+							<ul class="list-unstyled list-inline clockTick">
+								<li id="days"></li>
+								<li id="point">:</li>
+								<li id="hours"></li>
+								<li id="point">:</li>
+								<li id="min"></li>
+								<li id="point">:</li>
+								<li id="sec"></li>
+							</ul>
+					   </div>
+					</div>
+
+                   
+					<ul style="list-style: none;  padding: 8px 0px 8px 0" class='text-info bg-info' ng-show="!showTimer && quizTimerCounterEndMsg">
+						<li >
+							<div class="row">
+								<div class="col-xs-12 ">
+									<i class="fa fa-info-circle"></i>
+									<b style=" font-size: 16px;"> {{ lang.msg_countdown_timer_end }} </b>
+								</div>
+							</div>
+						</li>
+					</ul>
+
+					
+
+
+                    <h4 class="card-title" ng-if="sections.length>1">
+						<br>
+							<strong>{{ lang.caption_section }}</strong>
+							<hr>
+					</h4>
+
+					<div class="accordionSection"  ng-if="sections.length>1">
+
+						<uib-accordion close-others="true"> 
+							<div uib-accordion-group class="panel-default" is-open="status.open" ng-repeat="sec in sections">
+								<uib-accordion-heading>
+									
+									<div class="row" ng-if="sectionStarted[sec.sectionId]">
+                                        <div class="col-md-10 col-sm-12 col-xs-12 padLR0px">{{sec.secTitle}}</div>
+                                        <div class="col-md-1 col-sm-11 col-xs-9 sectionTop padLR0px">
+					                       <button class="btn btn-xs btn-fill" ng-disabled="proceedBtnDisableSQ"  ng-class="{btnVisible:!proceedBtn}"   ng-click="resumeQuiz($event,sec.sectionId)">
+											<span ng-show="proceedBtnDisableSQ"><i class="fa fa-circle-o-notch fa-fw fa-spin"></i> </span> {{ lang.caption_resume }}</button>
+										
+										</div>
+                                        <div class="col-md-1 col-sm-1 col-xs-3 sectionTop padLR0px">
+                                            <i class="pull-right fa sectionArrow" ng-class="{'fa-chevron-down': status.open, 'fa-chevron-right': !status.open}"></i>
+                                        </div>
+									</div>
+									
+									
+									<div class="row" ng-if="!sectionStarted[sec.sectionId]">
+                                        <div class="col-md-11 col-sm-12 col-xs-12 padLR0px">
+											{{sec.secTitle}}
+										</div>
+										<div class="col-md-1 col-sm-12 col-xs-12 sectionPadBottom padLR0px">
+									    <i class="pull-right fa sectionArrowNotStarted" ng-class="{'fa-chevron-down': status.open, 'fa-chevron-right': !status.open}"></i>
+										</div>
+                                    </div>
+								</uib-accordion-heading>
+
+								<h5 class="card-title">
+									<strong>{{lang.caption_instruction}}</strong>
+									<hr>
+								</h5>
+
+								<span  ng-if="sec.instruction.length>0" math="{{sec.instruction}}"></span> 
+								<span ng-if="sec.instruction.length==0"> {{ lang.caption_nav }} </span>
+								<br>
+
+								
+								<p ng-if="sec.partialGrading" class="text-warning bold">
+									<br>
+									<i class="fa fa-info-circle"></i> 	{{ lang.caption_partialInstrSec }}
+								</p>
+								
+
+								<h5 class="card-title">
+									<strong>{{lang.caption_gradingScheme}}</strong>
+									<hr>
+								</h5>
+
+								<p>{{lang.msg_gradingScheme}} : </p>
+								<center>
+									<div class="table-responsive">
+										<table class="table table-center  grade-table">
+											<tr>
+												<th width="160"></th>
+												<th class="no-help-used" align="center"> &nbsp;{{lang.caption_noHelpUsed}}&nbsp; </th>
+												<th class="hint-used" align="center" ng-show="sec.helpAllowed<=2&&sec.helpAllowed>0"> &nbsp;{{lang.caption_hintUsed}}&nbsp; </th>
+												<th class="explanation-used" align="center" ng-show="sec.helpAllowed==2"> &nbsp;{{lang.caption_expUsed}}&nbsp; </th>
+											</tr>
+											<tr>
+												<td align="center">
+													<b> {{lang.caption_correctAns}} </b>
+												</td>
+
+												<td class="no-help-used">{{sec.gradingMatrix[0][0] }}</td>
+												<td class="hint-used" ng-show="sec.helpAllowed<=2&&sec.helpAllowed>0">{{sec.gradingMatrix[0][1]}}</td>
+												<td class="explanation-used" ng-show="sec.helpAllowed==2">{{sec.gradingMatrix[0][2]}}</td>
+
+
+											</tr>
+											<tr>
+												<td align="center">
+													<b> {{lang.caption_skippedQus}} </b>
+												</td>
+												<td class="no-help-used">{{sec.gradingMatrix[1][0]}}</td>
+												<td class="hint-used" ng-show="sec.helpAllowed<=2 && sec.helpAllowed>0">{{sec.gradingMatrix[1][1]}}</td>
+												<td class="explanation-used" ng-show="sec.helpAllowed==2">{{sec.gradingMatrix[1][2]}}</td>
+												
+											</tr>
+											<tr>
+												<td align="center">
+													<b> {{lang.caption_incorrectAns}} </b>
+												</td>
+												<td class="no-help-used">{{sec.gradingMatrix[2][0]}}</td>
+												<td class="hint-used" ng-show="sec.helpAllowed<=2 && sec.helpAllowed>0">{{sec.gradingMatrix[2][1]}}</td>
+												<td class="explanation-used" ng-show="sec.helpAllowed==2">{{sec.gradingMatrix[2][2]}}</td>
+												
+											</tr>
+										</table>
+
+									</div>
+
+
+								</center>
+
+								<br>
+							   
+								
+								
+								<div class="row" ng-show="proceedBtn && !sectionStarted[sec.sectionId] ">
+									<div class="col-xs-12 padLR0px">
+										<div style="font-size:medium;">
+											
+											<div class="pull-left checkbox">
+												<input type="checkbox" id="checkme{{$index}}" ng-model="chkme[sec.sectionId]">
+												<label for="checkme{{$index}}">
+													<b>{{lang.msg_iUnderstand}}</b>
+												</label>
+											</div>
+
+											<div class="pull-right clearFloat">
+												<button ng-click="proceedButton(sec.sectionId)" ng-disabled="!chkme[sec.sectionId] || proceedBtnDisableSQ" type="button" class="btn btn-wd btn-default btn-fill btn-move-right">
+													<span ng-show="proceedBtnDisableSQ"><i class="fa fa-circle-o-notch fa-fw fa-spin"></i> </span>
+													{{lang.caption_proceed}}
+													<span class="btn-label">
+														<i class="ti-angle-right"></i>
+													</span>
+												</button>
+											</div>
+
+
+										</div>
+									</div>
+								</div>
+								
+							  </div>
+						</uib-accordion>
+						
+					</div>
+
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row"  ng-if="sections.length==1" ng-show="proceedBtn">
+		<div class="col-xs-12">
+			<div style="font-size:medium;">
+				<div class="pull-left checkbox">
+					<input type="checkbox" id="checkme" ng-model="chkme[sections[0].sectionId]">
+					<label for="checkme">
+						<b>{{lang.msg_iUnderstand}}</b>
+					</label>
+				</div>
+
+				<div class="pull-right">
+					<button ng-click="proceedButton(sections[0].sectionId)" ng-disabled="!chkme[sections[0].sectionId] || proceedBtnDisableSQ" type="button" class="btn btn-wd btn-default btn-fill btn-move-right">
+						<span ng-show="proceedBtnDisableSQ"><i class="fa fa-circle-o-notch fa-fw fa-spin"></i> </span> {{lang.caption_proceed}}
+						<span class="btn-label">
+							<i class="ti-angle-right"></i>
+						</span>
+					</button>
+				</div>
+				<div class="clearfix"></div>
+
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="overlay" class="maxZIndex">
+	<div class='clear-fix'>
+		<div class='pull-right'>
+			&nbsp;
+			<button class="btn btn-fill btn-primary btn-sm " id="closeOverlay">
+				<i class='fa fa-close'></i> {{ lang.caption_cancel }}</button>
+		</div>
+	</div>
+	<iframe frameborder="0" id="overlayIframe"></iframe>
+</div>
+
+<div class="overlay-div">
+	<div class="row">
+	  <br>
+	  <div class="col-md-4 col-md-offset-4">
+		<div class="card card-user">
+		  <div class="image">
+			<img src="assets/img/bgimg.jpg" alt="...">
+		  </div>
+		  <div class="card-content" style="min-height: 175px !important;">
+			<div class="author">
+			  <img class="avatar border-white" onerror="onImgLoadError(this)" src="https://robohash.org/{{rsgetData('USER')}}{{rsgetData('QUIZID')}}?set=set2&&bgset=bg2&&size=90x90"
+				alt="...">
+			  <h4 class="card-title">{{rsgetData('USER')}}
+				<br>
+			  </h4>
+			  <h4 class="card-title">{{rsgetData('QUIZID')}}
+			  </h4>
+			  <b>{{lang.msg_submitGrade}}</b>
+			  <p>{{lang.msg_timeUp}}</p>
+
+			 
+			  <p> {{ lang.caption_quizSubmitTimer  }} <b>{{ autoSubmitCounter }}</b> {{ lang.caption_sec }}.</p>
+			  <div class="text-center">
+				<button class="btn btn-fill btn-wd btn-success btnMr" ng-click="quizFinalSubmit()">{{lang.caption_submit}}</button>
+				
+				<button class="btn btn-danger btn-fill btn-wd btnMr" ng-click="loggedOut()">{{lang.caption_logout}}</button>
+			  </div>
+
+			  
+			</div>
+		  </div>
+		</div>
+	  </div>
+	</div>
+  </div>
+
+  <div class="modal fade" id="secQuizSummaryMdl" role="dialog">
+	<div class="modal-dialog">
+	  <div class="modal-content">
+		<div class="modal-header">
+				
+				<h5 class="modal-title"> {{lang.caption_quizSummary}} 
+						<span class="pull-right">			  
+								<button type="button" ng-click="submitQuiz()" class="btn btn-primary btn-fill btn-sm"   data-dismiss="modal" ng-disabled="isSubmitClick">{{ !isSubmitClick ? lang.caption_submit : lang.caption_wait }}</button>
+								<button type="button" class="btn btn-danger btn-fill btn-sm" data-dismiss="modal">{{lang.caption_cancel}}</button>								
+						</span>
+				</h5>
+		</div>
+		<div class="modal-body">
+
+				<div class='text-center alert alert-warning'>
+						{{ lang.caption_submitWarning }}
+				</div>
+		   
+			<div ng-repeat="sec in summaryData">
+
+                    <span class="summSecHeading">{{ sec.secTitle }}</span>
+				   
+					<ul class="list-unstyled team-members" ng-if="sec.isEnter">
+
+							<li>
+								<div class="row">
+									<div class="col-xs-9">
+										<h5>Number of graded questions</h5>
+									</div>
+									<div class="col-xs-3">
+										<h5><b>{{sec.totalGraded}}</b></h5>
+									</div>
+								</div>
+								<hr>
+							</li>
+
+							<li>
+								<div class="row">
+									<div class="col-xs-9">
+										<h5 class="padLeft20px">{{lang.caption_qusAttempted}}</h5>
+									</div>
+									<div class="col-xs-3">
+										<h5><b>{{sec.gradeAbleAttempted}}</b></h5>
+									</div>
+				                   </div>
+				                <hr>
+							</li>
+							<li>
+								<div class="row">
+									<div class="col-xs-9">
+										<h5 class="padLeft20px">{{lang.caption_qusSkipped}}</h5>
+									</div>
+									<div class="col-xs-3">
+										<h5><b>{{sec.gradedSkip}}</b></h5>
+									</div>
+				                </div>
+				                <hr>
+							</li>
+
+							<li>
+								<div class="row">
+									<div class="col-xs-9">
+										<h5>Number of ungraded questions </h5>
+									</div>
+									<div class="col-xs-3">
+										<h5><b>{{sec.ungradeable}}</b></h5>
+									</div>
+				                </div>
+				                <hr>
+							</li>
+
+							<li>
+								<div class="row">
+									<div class="col-xs-9">
+										<h5>{{lang.caption_timeTaken}}</h5>
+									</div>
+									<div class="col-xs-3">
+										<h5><b>{{sec.timeTaken}}</b></h5>
+									</div>
+								</div>
+								<hr>
+							</li>
+					</ul>
+								
+			 	   <strong ng-if="!sec.isEnter" class="text-danger text-center" style="display:block"> {{ lang.caption_notAttempted}} <br></strong>
+			</div>
+		</div>
+	  </div>
+	</div>
+  </div>
+
+
+  <div ng-include="'app/views/languageModal.html'"></div>

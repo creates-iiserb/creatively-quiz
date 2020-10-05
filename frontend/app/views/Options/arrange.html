@@ -1,0 +1,23 @@
+
+	<div id="qusBlock" class="card mtResp">
+		
+		<div class="card-content">
+			<div class="typo-line">
+				<span math="{{filteredQuestions[0].object.question}}"></span>
+			</div>
+			<br>
+			<div id="arrOptions" class="options" ng-init="sortListItems()">
+				<div ng-repeat="item in arrangeType[currentPage-1]" class="arrOptions" id="{{item}}">
+					<div class="arrangeOption">
+						<div class="arrangeContent">
+							<span math="{{filteredQuestions[0].object.items[item-1].stmt}}">
+						</div>
+						<div class="arrangeIcon">
+							<span class="ti-move"></span>
+						</div>
+						<div class="clearfix"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
