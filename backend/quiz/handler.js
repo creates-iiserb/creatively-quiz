@@ -11,6 +11,7 @@ const respdb = nano.db.use('examineer_response')
 const examdb = nano.db.use('examineer_exam')
 
 let index = async (req, res, next) => {
+    // let data = await plugins.getQuizAnalytics('AAKN','1','4')
     //res.success(data)
     res.success({ message: "Quiz API. Version 2" })
 
@@ -64,6 +65,7 @@ let checkIfQuizAttempted = (quizid, uname) => {
             if (data.rows.length > 0) {
                 var attempted = false;
                 var startedOn = [];
+                // since the submitted on date will be same, taking it's value from the first section 
                 var submittedOn = data.rows[0].value.submittedOn;
                 var quizIds = [];
                 var secObj = {}
@@ -72,20 +74,16 @@ let checkIfQuizAttempted = (quizid, uname) => {
                     var isStartedSec = false;
                     var secAttempted = false;
                     if (value.attempted == true) {
-                        // attempted exists means the section is submitted
+                        // attempted exists means the section is submitted/graded by math server 
                         secAttempted = true;
                     } else {
                         // if the value of submittedon exists, the section was not attempted but the quiz was still submitted for grading
                         //  whenever a quiz is graded, all sections will have the same submittedOn timestamp.
                         //  attempted flag for a section tells us whether the responses for that section exists or not which in turn means that whether the user opened that section or not
-                        if (value.submittedOn) {
-                            secAttempted = true;
-                        }
+                        if (value.submittedOn) {secAttempted = true;}
                     }
-
                     // detrmining whether the quiz is graded or not  - if either of the section has the "secAttempted" field true, it means the whole quiz is sumbited.
                     attempted = secAttempted || attempted;
-
                     if (value.startedOn) {
                         // whenever a section is started , started on time stamp is added to it.
                         isStartedSec = true
@@ -103,17 +101,9 @@ let checkIfQuizAttempted = (quizid, uname) => {
                     // calculating start time of the **quiz**, which is the min time among all section start timestamps
                     startDate = utils.quizStartDate(startedOn)
                 }
-
-
                 // checking in the response documnent for submitStatus flag ...
-                let respCheck = {
-                    submitStatus: "not_submitted",
-                    isSubmitted: false,
-                    submitExists: false
-                }
-
+                let respCheck = {submitStatus: "not_submitted",isSubmitted: false,submitExists: false}
                 let submitExists = false;
-
                 let data1 = await respdb.view('forResponseDoc', 'quizIdUserIdToSubmitStatus', { key: quizid + "-" + uname })
                 if (data1.rows.length > 0) {
                     // resp doc exists
@@ -130,19 +120,38 @@ let checkIfQuizAttempted = (quizid, uname) => {
                 if (respCheck.submitExists == true) {
                     attempted = attempted || respCheck['isSubmitted']
                 }
-
                 // console.log({ respCheck: respCheck, sectionStarted: secObj, started: startedOn, submitted: submittedOn, isAttempted: attempted, quizIds: quizIds, isStarted: isStarted, startedOn: startDate })
-                resolve({ respCheck: respCheck, sectionStarted: secObj, started: startedOn, submitted: submittedOn, isAttempted: attempted, quizIds: quizIds, isStarted: isStarted, startedOn: startDate })
-
+                /**
+                 * respCheck: {  // response documnet check 
+                 *  submitStatus:"the value , can either be submitted,graded,regrade",
+                 *  isSubmitted:"whether the quiz is submitted or not",
+                 *  submitExists: "true, if user has asked to submit the quiz"
+                 * }, 
+                 * sectionStarted: "object of whether section has started {"1":true,"2":false,...}",  
+                 * started: "array of all section start date ["2020..",...]", 
+                 * submitted: "date at which quiz was submitted", 
+                 * isAttempted: attempted, "whether the quiz is sumbitted or not "
+                 * quizIds: ["AAIR-1-1",...] array of all quiz ids, 
+                 * isStarted: "whether the quiz was started or not i.e altest one timestamp exists ", 
+                 * startedOn: "time in utc at which the quiz was started, calculated as min of all section" 
+                 */
+                resolve({ 
+                    respCheck: respCheck, 
+                    sectionStarted: secObj, 
+                    started: startedOn, 
+                    submitted: submittedOn, 
+                    isAttempted: attempted, 
+                    quizIds: quizIds, 
+                    isStarted: isStarted, 
+                    startedOn: startDate 
+                })
             } else {
+                // either quizes not yet created or some other error
                 reject(utils.generateError({ configCode: 'exam404' }));
             }
-        } catch (error) {
-            reject(error)
-        }
+        } catch (error) {reject(error)}
     })
 }
-
 
 let login = async (req, res, next) => {
     try {
@@ -152,15 +161,14 @@ let login = async (req, res, next) => {
         })
 
         let authorLogin = false;
-
         if (req.body.reqByAuthor) {
             if (req.body.reqByAuthor[0] == true) {
-                // todo validate reqbyauthor
+                // TODO validate reqbyauthor
                 authorLogin = true;
-                //let reqCookie = req.body.reqByAuthor[2] + ":" + req.body.reqByAuthor[1];
                 //res.cookie('reqByAuthor', reqCookie, config.get('reqByAuthorCookie'));
             }
         }
+
         let examData = {};  // will contain data fetched from  exam_exam
         let metaData = {} // will contain data  fetched form exam_meta
         let usrTkn;
@@ -169,48 +177,50 @@ let login = async (req, res, next) => {
             user: req.body.uname,
             password: req.body.pwd
         }
-        // check if password matches 
-        // credential are stored in examineer_metadata quiz record
 
-        let quizMetaCheck = await metadb.get(input.quiz)
+        // Part 1 : Pre checks 
+        // let quizMetaCheck;
+        // this view take quizid and returns quiz metadata
+        let metadbView = await metadb.view("byQuiz","quizIdToMetaData",{key:input.quiz})
+        if(metadbView.rows.length>0){
+            metaData  = metadbView.rows[0].value
+        }else{
+            // quiz does not exists, throw err
+            throw utils.generateError({ configCode: 'meta404' })
+        }
+        // let quizMetaCheck = await metadb.get(input.quiz)
 
-        //pre check
-        if(quizMetaCheck['security']=='chromeOnly'){
-            // check useragent&appagent header, allowed - 
-            // req.useragent
-            let isChromeCheck =  req.useragent['isChrome'] == true;
+        if (metaData['security'] == 'chromeOnly') {
+            // check if security is chromeonly, loginrequest is coming from chrome. This happens only on the login request nowhere else 
+            let isChromeCheck = req.useragent['isChrome'] == true;
             let isDesktopCheck = req.useragent['isDesktop'] == true;
-            //let isTabletCheck = req.useragent['isTablet'] == true;
-            //let check = isChromeCheck && (isDesktopCheck || isTabletCheck );
             let check = isChromeCheck && isDesktopCheck;
-            if(check==false){
-                throw utils.generateError({ configCode: 'chromeOnly' })
-            }
+            if (check == false) {throw utils.generateError({ configCode: 'chromeOnly' })}
         }
 
-        if (quizMetaCheck.author == 'unknown') {
-            throw utils.generateError({ configCode: 'meta404' })
+         // to check if the quiz was deleted
+        if (metaData.author == 'unknown') {throw utils.generateError({ configCode: 'meta404' })}
+
+        if (metaData.status != 'active') {
+            // to check if the quiz is active 
+            // instructors allowed to login even if quiz is inactive 
+            if (!req.body.reqByAuthor) {throw utils.generateError({ configCode: 'inact' }) }
         }
 
-        if (quizMetaCheck.status != 'active') {
-            let code = await config.getInner('configMessage', 'inact')
-            if (!req.body.reqByAuthor) {
-                throw utils.generateError({ configCode: 'inact' })
-            }
-        }
+         // check if user even exists in the records or not
+            // this prevent unnecessary token doc generation for user that does not even exists 
+        if (metaData['credentials'].indexOf(input.user)==-1) {throw utils.generateError({ configCode: 'meta404' })}
 
-        if (!quizMetaCheck['credentials'][input.user]) {
-            throw utils.generateError({ configCode: 'meta404' })
-        }
+        // Part 2 : password check 
 
         let metaDBData = await metadb.view('byQuizUser', 'authentication', { key: [input.quiz, input.user, input.password] })
         let loginAttemptSuccessful = false;
-
+        let studentData ;
         if (metaDBData.rows.length > 0) {
             // record with given quizid, uname and password exists => password matched
             loginAttemptSuccessful = true;
-            // store quiz metadata
-            metaData = metaDBData.rows[0].value
+            // store student metadata
+            studentData = metaDBData.rows[0].value
         }
 
         let tokenData = await addOrModifyRespTokenDoc({
@@ -221,8 +231,8 @@ let login = async (req, res, next) => {
             quizId: input.quiz,
             useragent: req.useragent,
             authorLogin: authorLogin,
-            beginTime: quizMetaCheck.beginTime,
-            endTime: quizMetaCheck.endTime
+            beginTime: metaData.beginTime,
+            endTime: metaData.endTime
         });
 
         if (!tokenData.loginAllowed) {
@@ -231,24 +241,9 @@ let login = async (req, res, next) => {
             // login allowed 
             // get additional data
             usrTkn = tokenData.token
-
             examData = await checkIfQuizAttempted(input.quiz, input.user)
             // build response here
             // first check if the quiz is even active or not 
-            if (metaData.status != 'active') {
-                let code = await config.getInner('configMessage', 'inact')
-                // res.error200(code)
-                //throw utils.generateError()
-                if (!req.body.reqByAuthor) {
-                    // if req.body.reqByAuthor exists , author is trying to login from authoring(manage quiz)
-                    throw utils.generateError({ configCode: 'inact' })
-                }
-            }
-
-            let allowFC = false;
-            if (quizMetaCheck.hasOwnProperty('allowFC')) {
-                allowFC = quizMetaCheck['allowFC'];
-            }
 
             let responseData = {
                 beginTime: metaData['beginTime'],
@@ -261,13 +256,13 @@ let login = async (req, res, next) => {
                 calc: metaData['calc'],
                 duration: metaData['duration'],
                 instruction: metaData['instruction'],
-                quizType: quizMetaCheck['quizType'] || "sectioned",
-                allowFC: allowFC,
+                quizType: metaData['quizType'] || "sectioned",
+                allowFC: metaData['allowFC'],
                 allowStats: metaData['allowStats']
             }
 
-            if (metaData['userData']) {
-                responseData['userData'] = metaData['userData']
+            if (studentData['userData']) {
+                responseData['userData'] = studentData['userData']
             }
 
             if (metaData.isSections == true) {
@@ -333,7 +328,7 @@ module.exports.login = login
 
 var logFailedAttempt = async (options) => {
     // just send email
-      // console.log("will send email...........")
+    // console.log("will send email...........")
     try {
         // fetch quiz details  options.quiz + '-' + options.uname
         let quizData = await metadb.get(options.quiz); // TODO use a view later 
@@ -344,13 +339,13 @@ var logFailedAttempt = async (options) => {
             // get email if student 
             let userCol = quizData['users']['userCol']
             let emailCol = quizData['users']['emailCol']
-            if(quizData['users']['userData'][options.uname]){
+            if (quizData['users']['userData'][options.uname]) {
                 if (quizData['users']['userData'][options.uname][emailCol]) {
                     student.send = true;
                     student.email = quizData['users']['userData'][options.uname][emailCol]
                     let tokenDocRows = await respdb.view('forTokenDoc', 'quizIdUserIdToDoc', { key: options.quiz + '-' + options.uname })
                     let tokenData = JSON.parse(JSON.stringify(tokenDocRows.rows[0].value))
-                    let newEmailToken = utils.generateTokenN(20)  
+                    let newEmailToken = utils.generateTokenN(20)
                     tokenData['resetEmailToken'] = newEmailToken;
                     tokenData['resetEmailDate'] = utils.getCurrentDateInUTC();
                     // console.log(tokenData);
@@ -384,18 +379,18 @@ var logFailedAttempt = async (options) => {
 
         if (author.send) {
             await utils.dbLog(author.logMsg)
-            utils.requestToQuizServer('send_mail', { to: author.email, sub: "Unlock quiz", body: await config.get("emailHead")+ author.body + await config.get("emailTail")})
+            utils.requestToQuizServer('send_mail', { to: author.email, sub: "Unlock quiz", body: await config.get("emailHead") + author.body + await config.get("emailTail") })
         }
 
         if (student.send) {
             await utils.dbLog(student.logMsg)
-            utils.requestToQuizServer('send_mail', { to: student.email, sub: "Unlock quiz", body: await config.get("emailHead")+ student.body+ await config.get("emailTail") })
+            utils.requestToQuizServer('send_mail', { to: student.email, sub: "Unlock quiz", body: await config.get("emailHead") + student.body + await config.get("emailTail") })
         }
-        return 
+        return
     } catch (error) {
         console.log(error)
         throw error
-    }    
+    }
 }
 
 var addOrModifyRespTokenDoc = (options) => {
@@ -403,13 +398,11 @@ var addOrModifyRespTokenDoc = (options) => {
         // inputs -   loginAttemptSuccessful, user, quiz, uname, quizId, useragent, author login
         // outputs -  token (new token, on successful login) , loginAllowed (boolean , whether allowed to login)
         try {
-            out("token fun....................................")
-            let maxFailedLoginAttempts = await  config.get('maxFailedLoginAttempts')
+            let maxFailedLoginAttempts = await config.get('maxFailedLoginAttempts')
             // check if token doc exists
             let tokenDBDoc = await respdb.view('forTokenDoc', 'quizIdUserIdToDoc', { key: options.quiz + "-" + options.user });
             let tokenDoc1 = {}; // common token db
             if (tokenDBDoc.rows.length == 0) {
-
                 // token doc does not exists => first time login => create a new token doc
                 // get new response doc id 
                 let newIdDetails = await getNewRespDBid();
@@ -422,29 +415,22 @@ var addOrModifyRespTokenDoc = (options) => {
                     failedLogin: 0, //options.loginAttemptSuccessful ? 0 : 1,
                     log: []
                 }
-                if (newIdDetails._rev) {
-                    // if old id is being reused, you also need the rev id
-                    tokenDoc1._rev = newIdDetails._rev;
-                }
-
+                // if old id is being reused, you also need the rev id
+                if (newIdDetails._rev) {tokenDoc1._rev = newIdDetails._rev;}
                 out("will create new token doc id = " + newIdDetails._id)
             } else {
                 // token doc exists
                 let existingTokenData = tokenDBDoc.rows[0].value;
-                if (!existingTokenData.log) {
-                    existingTokenData.log = []
-                }
+                if (!existingTokenData.log) {existingTokenData.log = []}
                 existingTokenData['token'] = utils.generateToken()
                 tokenDoc1 = existingTokenData
                 out("token doc exists id = " + tokenDoc1['_id'])
                 if (tokenDoc1['failedLogin'] >= maxFailedLoginAttempts) {
-                     // console.log("falied limit exceeded")
-                     if (options.authorLogin==false) {
-                         //  to block the student to send login request after more than 11 incorrect attempts
-                         //  after 11 aattempts , request will be rejected and not logged
+                    if (options.authorLogin == false) {
+                        //  after 11 aattempts , request will be rejected and not logged in the token doc
                         return reject(utils.generateError({ configCode: 'maxlogin' }))
                     }
-                } 
+                }
             }
 
             // deadline check
@@ -452,39 +438,34 @@ var addOrModifyRespTokenDoc = (options) => {
             var today = new Date();
             var beginDate = new Date(options.beginTime);
             var endDate = new Date(options.endTime);
+
             if (today > endDate) {
+                // newpolicy :  login is allowed after deadline
                 // quiz deadline is over
                 // check if response doc for that quiz exists
                 // if not , login not allowed
-                let qRes = await respdb.view('forResponseDoc', 'quizIdUserIdToResponse1', { key: options.quiz + '-' + options.uname })
+                // let qRes = await respdb.view('forResponseDoc', 'quizIdUserIdToResponse1', { key: options.quiz + '-' + options.uname })
                 let cAttempt = await checkIfQuizAttempted(options.quiz, options.user)
                 if (cAttempt.isStarted == false) {
                     // quiz not started
                     dlLoginNotAllowed = true; // login not allowed
                     if (options.authorLogin == true) {
                         // author logging in
-                        if (cAttempt.isAttempted == true) {
-                            dlLoginNotAllowed = false;
-                        }
+                        if (cAttempt.isAttempted == true) {dlLoginNotAllowed = false;}
                     }
                 }
             }
 
             out("deadline not allowed flag " + dlLoginNotAllowed)
-
             let lobj;
-            let sendEmailLink =false; // to send email to student  with a link to unlock account 
+            let sendEmailLink = false; // to send email to student  with a link to unlock account 
 
             if (options.loginAttemptSuccessful) {
-                // login success
-
                 out("login attempte successful ")
                 let accBlocked = false; // flag, set if  account is blocked
                 if (tokenDoc1['failedLogin'] < maxFailedLoginAttempts) {
                     accBlocked = false;
-                } else {
-                    accBlocked = true;
-                }
+                } else {accBlocked = true;}
 
                 out("accBlock status " + accBlocked)
 
@@ -505,8 +486,15 @@ var addOrModifyRespTokenDoc = (options) => {
                     } else {
                         // student login , normal 
                         tokenDoc1['failedLogin'] = 0;
-                        out(".... setting faliledLogin to 0")
-                        lobj = utils.generateLogObject({ action: "logged_in", priority: 2, message: "Logged in", useragent: options.useragent, authorLogin: options.authorLogin })
+                        out(".... setting faliledLogin to 0")                    
+                        if (dlLoginNotAllowed) {
+                            // if the quiz deadline allow them to still login 
+                            out("logging in after deadline... rejected")
+                            lobj = utils.generateLogObject({ action: "logged_in", priority: 2, message: "Login after quiz deadline", useragent: options.useragent, authorLogin: options.authorLogin })
+                        }else{
+                            lobj = utils.generateLogObject({ action: "logged_in", priority: 2, message: "Logged in", useragent: options.useragent, authorLogin: options.authorLogin })
+                        }
+                    
                     }
                 }
             } else {
@@ -523,41 +511,34 @@ var addOrModifyRespTokenDoc = (options) => {
                 }
             }
 
-            if (dlLoginNotAllowed) {
-                // if the quiz deadline is over then only deadline over message will be emmited
-                // logging in after deadline is over
-                out("logging in after deadline... rejected")
-                lobj = utils.generateLogObject({ action: "logged_in_blocked3", priority: 1, message: "Login request rejected. Deadline over", useragent: options.useragent, authorLogin: options.authorLogin })
-            }
-
             out("final falidLogin = " + tokenDoc1.failedLogin)
             tokenDoc1.log.push(lobj)
             await respdb.insert(tokenDoc1)
             await utils.emitEvent(options.quiz, options.user, lobj)
 
-            if(sendEmailLink){
-               await  logFailedAttempt(options);
+            if (sendEmailLink) {
+                await logFailedAttempt(options);
             }
-            if (dlLoginNotAllowed) {
-                out("...rejecting")
-                reject(utils.generateError({ configCode: 'afterDeadline' }))
-            } else {
-                if (tokenDoc1.failedLogin >= maxFailedLoginAttempts) {
-                    // allow the author to login even after max login 
-                    if (options.authorLogin) {
-                        // allow author
-                        out("...resolving")
-                        resolve({ token: tokenDoc1.token, loginAllowed: options.loginAttemptSuccessful })
-                    } else {
-                        // reject student
-                        out("...rejecting")
-                        reject(utils.generateError({ configCode: 'maxlogin' }))
-                    }
-                } else {
+            // if (dlLoginNotAllowed) {
+            //     out("...rejecting")
+            //     reject(utils.generateError({ configCode: 'afterDeadline' }))
+            // } else {
+            if (tokenDoc1.failedLogin >= maxFailedLoginAttempts) {
+                // allow the author to login even after max login 
+                if (options.authorLogin) {
+                    // allow author
                     out("...resolving")
-                    resolve({ token: tokenDoc1.token, loginAllowed: options.loginAttemptSuccessful })
+                    resolve({dlNotSub:dlLoginNotAllowed, token: tokenDoc1.token, loginAllowed: options.loginAttemptSuccessful })
+                } else {
+                    // reject student
+                    out("...rejecting")
+                    reject(utils.generateError({ configCode: 'maxlogin' }))
                 }
+            } else {
+                out("...resolving")
+                resolve({dlNotSub:dlLoginNotAllowed, token: tokenDoc1.token, loginAllowed: options.loginAttemptSuccessful })
             }
+            //}
         }
         catch (err) {
             //console.log(err['error']=='not_found' && err['reason']=='missing')
@@ -650,34 +631,51 @@ let checkIfQuizIsActive = (quizId) => {
 }
 
 
+let genBlankQueResObj = (queId, qType) => {
+    let res = {};
+    res['ref'] = queId
+    res['type'] = qType
+    res['timeTaken'] = 0
+    res['helpUsed'] = 0
+    res['lock'] = false
+    res['review'] = 0
+    res['answerId'] = -1
+    res['tempAns'] = -1
+    return res
+}
+
 let createResponseDoc = (options) => {
     // to create new exam_response doc recod
     return new Promise((resolve, reject) => {
         getNewRespDBid()
-            .then(resId => {
-                let newDoc = {
-                    quizId: options.quizId,
-                    userId: options.userId,
-                }
+            .then(async resId => {
+                let newDoc = { quizId: options.quizId,userId: options.userId}
+
+                let allQuizDB = await examdb.view("byQuizUser", "quizIdUserIdToDoc", { key: options.quizId + "-" + options.userId })
+                let blankSection = {}; // { "1": { meta: {}, response: [] } }
+                allQuizDB.rows.map(quizRecord1 => {
+                    let quizRecord = quizRecord1['value']
+                    // initalize each section object, 
+                    let blankResp = [];
+                    quizRecord["quizdata"]["elements"].map(que => {
+                        blankResp.push(genBlankQueResObj(que["ref"],que["type"]))
+                    })
+                    blankSection[quizRecord["meta"]["section"]] = { meta: { saveType: "blankInitBySystem" }, response: blankResp }
+                })
 
                 if (options.isSection) {
-                    newDoc['sections'] = { "1": { meta: {}, response: [] } }
-                } else {
-                    newDoc['response'] = []
-                }
+                    newDoc['sections'] = blankSection 
+                } else {newDoc['response'] = []}
 
                 newDoc._id = resId._id;
+
                 if (resId._rev) {
                     newDoc._rev = resId._rev;
                 }
                 return respdb.insert(newDoc)
             })
-            .then((data) => {
-                resolve()
-            })
-            .catch(err => {
-                reject(err)
-            })
+            .then((data) => {resolve()})
+            .catch(err => {reject(err)})
     })
 
 }
@@ -718,14 +716,14 @@ let getQuizTimings = async (req, res, next) => {
                     resp.response.forEach(itm => {
                         tt += itm.timeTaken;
                         if (itm.lock) { ans++ }
-                        if(itm.type=='info'){ 
-                            infoType++ 
-                        }else{ 
+                        if (itm.type == 'info') {
+                            infoType++
+                        } else {
                             totalGrad++;
                             // if the item is not info type and is locked , increment this counter
-                            if(itm.lock){
+                            if (itm.lock) {
                                 gradAtt++;
-                            }else{
+                            } else {
                                 gradedSkip++;
                             }
                         }
@@ -763,14 +761,14 @@ let getQuizTimings = async (req, res, next) => {
                                 attempted++
                             }
 
-                            if(itm.type=='info'){ 
-                                infoType++ 
-                            }else{ 
+                            if (itm.type == 'info') {
+                                infoType++
+                            } else {
                                 totalGrad++;
                                 // if the item is not info type and is locked , increment this counter
-                                if(itm.lock){
+                                if (itm.lock) {
                                     gradAtt++;
-                                }else{
+                                } else {
                                     gradedSkip++;
                                 }
                             }
@@ -783,7 +781,7 @@ let getQuizTimings = async (req, res, next) => {
                         secSummary[newkey]['gradedAttempted'] = gradAtt;
                         secSummary[newkey]['totalGraded'] = totalGrad;
                         secSummary[newkey]['gradedSkip'] = gradedSkip;
-                        
+
                     }
                 })
             }
@@ -837,7 +835,8 @@ let quizData = async (req, res, next) => {
             if (quizDetails.isSection) {
                 await utils.requestToQuizServer('start_sectioned_quiz_section', { 'quizid': inputQuizId })
             } else {
-                await utils.requestToQuizServer('start_examineer_quiz', { 'quizid': inputQuizId })
+                throw utils.generateError({ configCode: 'internalError' });
+                // await utils.requestToQuizServer('start_examineer_quiz', { 'quizid': inputQuizId })
             }
         }
 
@@ -933,7 +932,7 @@ let saveQuizResponse = async (req, res, next) => {
         req.body.resData.response.map((itm, index) => {
             // console.log(itm)
             if (itm.lock == true) {
-                if(itm['type'] !== "sub"){
+                if (itm['type'] !== "sub") {
                     let eq = JSON.stringify(itm['answerId']) == JSON.stringify(itm['tempAns'])
                     if (eq == false) {
                         // if question is unlocked, answerId must be -1 
@@ -947,11 +946,11 @@ let saveQuizResponse = async (req, res, next) => {
                         // setting answerid to -1 
                         itm['answerId'] = itm['tempAns']
                     }
-                }else
-                if(itm['type'] === "sub"){
-                    itm['answerId'] = 1;
-                }
-                
+                } else
+                    if (itm['type'] === "sub") {
+                        itm['answerId'] = 1;
+                    }
+
             } else {
                 if (itm.answerId != -1) {
                     // if question is unlocked, answerId must be -1 
@@ -1077,8 +1076,10 @@ let generateBlankRespPlainQuiz = async (quizId, uname) => {
 
 let submitQuiz = async (req, res, next) => {
     try {
-        await utils.inspectJSON(req.body, { requiredFields: ['quizId', 'uname', 'isSection'], validFields: ['quizId', 'uname', 'isSection', 'reqByAuthor'] })
+        await utils.inspectJSON(req.body, { requiredFields: ['quizId', 'uname', 'isSection'], validFields: ['quizId', 'uname', 'isSection', 'reqByAuthor','submitReason'] })
         // await checkIfQuizIsActive(req.body.quizId)
+        let subMsg = "Quiz submitted"
+
         let data = await checkIfQuizAttempted(req.body.quizId, req.body.uname)
         if (data.isAttempted) {
             // quiz already submitted error
@@ -1086,7 +1087,6 @@ let submitQuiz = async (req, res, next) => {
         } else {
             // fetch response document 
             //throw utils.generateError({ configCode: 'alreadySubmitted' });--test
-
             let data1 = await respdb.view('forResponseDoc', 'quizIdUserIdToResponse1', { key: req.body.quizId + '-' + req.body.uname })
             // out(data1)
             if (data1.rows.length > 0) {
@@ -1094,21 +1094,20 @@ let submitQuiz = async (req, res, next) => {
                 let dta = data1.rows[0].value;
                 if (dta.response) {
                     // THIS CODE SHOULD NEVER BE EXECTUTED - PLAIN QUIZ IS DISCONTINUED
-                    if (dta.response.length > 0) {
-                        await utils.requestToQuizServer('submit_examineer_response', { 'quizid': req.body.quizId + '-' + req.body.uname, response: dta.response })
-                    } else {
-                        let blankresponse = await generateBlankRespPlainQuiz(req.body.quizId, req.body.uname)
-                        //out(blankresponse)
-                        await utils.requestToQuizServer('submit_examineer_response', { 'quizid': req.body.quizId + '-' + req.body.uname, response: blankresponse })
-                    }
+                    // if (dta.response.length > 0) {
+                    //     await utils.requestToQuizServer('submit_examineer_response', { 'quizid': req.body.quizId + '-' + req.body.uname, response: dta.response })
+                    // } else {
+                    //     let blankresponse = await generateBlankRespPlainQuiz(req.body.quizId, req.body.uname)
+                    //     //out(blankresponse)
+                    //     await utils.requestToQuizServer('submit_examineer_response', { 'quizid': req.body.quizId + '-' + req.body.uname, response: blankresponse })
+                    // }
+                    console.log("PLAIN QUIZ SUBMIT CODE EXECUTED, REJECTED"+JSON.stringify(req.body))
+                    throw utils.generateError({ configCode: 'internalError' });
                     // submit old quiz
                     //await utils.requestToQuizServer('submit_examineer_response', { 'quizid': req.body.quizId + '-' + req.body.uname, response: dta.response })
                 } else if (dta.sections) {
                     //submit sectional quiz
-
-
                     // new method to submit quiz 
-
                     if (dta.submitStatus) {
                         if (dta.submitStatus == "submitted") {
                             // this quiz is already submitted, waiting for quiz to be graded 
@@ -1123,24 +1122,36 @@ let submitQuiz = async (req, res, next) => {
                         respDoc['submitStatus'] = "submitted";
                         respDoc['submittedOn'] = utils.getCurrentDateInUTC()
                         await respdb.insert(respDoc)
-                    }
 
+                        if(req.body["submitReason"]){
+                            let msg = {
+                                "autoDeadline":" (auto submitted, deadline over)",
+                                "autoTimeup": " (auto submitted, time over)",
+                                "manual":" ",
+                                "appDeadline":" (deadline over)",
+                                "appTimeup": " (time over)",
+                            }
+                            subMsg += msg[req.body["submitReason"]]
+                        }
+
+                    }
                     // await utils.requestToQuizServer('submit_sectioned_quiz', { regrade: false, 'quizid': req.body.quizId, 'userid': req.body.uname, responseSections: dta.sections })
                 }
             } else {
                 // resp obj does not exists , proceed with blank response 
                 if (req.body.isSection) {
-                    await utils.requestToQuizServer('submit_sectioned_quiz', { regrade: false, 'quizid': req.body.quizId, 'userid': req.body.uname, responseSections: {} })
+                    console.log("SECTIONAL QUIZ SUBMITTED WITHOUT RESP DOC,REJECTED"+JSON.stringify(req.body))
+                    //await utils.requestToQuizServer('submit_sectioned_quiz', { regrade: false, 'quizid': req.body.quizId, 'userid': req.body.uname, responseSections: {} })
                 } else {
-                    out("plain quiz, blank quiz from server")
-                    let blankresponse = await generateBlankRespPlainQuiz(req.body.quizId, req.body.uname)
-
+                    console.log("PLAIN QUIZ SUBMIT CODE EXECUTED, REJECTED"+JSON.stringify(req.body))
+                    //out("plain quiz, blank quiz from server")
+                    //let blankresponse = await generateBlankRespPlainQuiz(req.body.quizId, req.body.uname)
                     //out(blankresponse)
-                    await utils.requestToQuizServer('submit_examineer_response', { 'quizid': req.body.quizId + '-' + req.body.uname, response: blankresponse })
+                    //await utils.requestToQuizServer('submit_examineer_response', { 'quizid': req.body.quizId + '-' + req.body.uname, response: blankresponse })
                 }
+                throw utils.generateError({ configCode: 'internalError' });
             }
-
-            await utils.dbLog({ uname: req.body.uname, quizId: req.body.quizId, priority: 1, message: "Quiz submitted", action: "submitted", useragent: req.useragent })
+            await utils.dbLog({ uname: req.body.uname, quizId: req.body.quizId, priority: 1, message: subMsg, action: "submitted", useragent: req.useragent })
             res.success({ "message": "Quiz submitted. Redirect to quiz summary page." })
         }
     } catch (err) {
@@ -1203,9 +1214,9 @@ let generateSummaryData = async (uid, qid) => {
                                 summObj['title'] = itm.title;
                                 summObj['helpAllowed'] = itm.helpAllowed;
                                 summObj['isAttempted'] = attempted[key];
-                                if(itm.hasOwnProperty("partialGrading")){
+                                if (itm.hasOwnProperty("partialGrading")) {
                                     summObj['partialGrading'] = itm["partialGrading"]
-                                }else{
+                                } else {
                                     summObj['partialGrading'] = false
                                 }
                                 data.summary.push(summObj)
@@ -1282,9 +1293,9 @@ let generateSummaryData = async (uid, qid) => {
                             summObj['title'] = itm.title;
                             summObj['helpAllowed'] = itm.helpAllowed;
                             summObj['isAttempted'] = attempted[key];
-                            if(itm.hasOwnProperty("partialGrading")){
+                            if (itm.hasOwnProperty("partialGrading")) {
                                 summObj['partialGrading'] = itm["partialGrading"]
-                            }else{
+                            } else {
                                 summObj['partialGrading'] = false
                             }
                             data.summary.push(summObj)
@@ -1351,23 +1362,31 @@ let getQuizSummary = async (req, res, next) => {
         var alertMsg = '';
         var endDt = new Date(metadata.endTime.toString());
         let resObj = {};
-        let summaryStats = await plugins.sectionWiseSummary(req.body.quizId,req.body.uname) // TODO re position it to make i more otimized
 
-        
+
         if (req.body.reqByAuthor) {
+            let summaryStats = await plugins.sectionWiseSummary(req.body.quizId, req.body.uname) // TODO re position it to make i more otimized
             // res.json({  summary: summaryData, status: 'allow', scoreStatus: 'submission', reviewStatus: 'allowed' });
-            resObj = { summaryStats:summaryStats, summaryGenerated: cdata['summaryGenerated'], summary: summary, status: 'allow', metadata: metadata, scoreStatus: 'submission', reviewStatus: 'allowed' }
+            resObj = { summaryStats: summaryStats, summaryGenerated: cdata['summaryGenerated'], summary: summary, status: 'allow', metadata: metadata, scoreStatus: 'submission', reviewStatus: 'allowed' }
         } else {
 
             // TODO do not send summary when not required
             switch (metadata.score) {
                 case 'submission':
-                    resObj = { summaryGenerated: cdata['summaryGenerated'], summaryStats:summaryStats, summary: summary, status: 'allow', metadata: metadata, scoreStatus: metadata.score, reviewStatus: metadata.review }
+                    let summaryStats = {}
+                    if (cdata['summaryGenerated']) {
+                        summaryStats = await plugins.sectionWiseSummary(req.body.quizId, req.body.uname) // TODO re position it to make i more otimized
+                    }
+                    resObj = { summaryGenerated: cdata['summaryGenerated'], summaryStats: summaryStats, summary: summary, status: 'allow', metadata: metadata, scoreStatus: metadata.score, reviewStatus: metadata.review }
                     break;
                 case 'deadline':
                     var ct = new Date();
                     if (ct > endDt) {
-                        resObj = { summaryGenerated: cdata['summaryGenerated'], summaryStats:summaryStats, summary: summary, metadata: metadata, status: 'allow', scoreStatus: metadata.score, reviewStatus: metadata.review }
+                        let summaryStats = {}
+                        if (cdata['summaryGenerated']) {
+                            summaryStats = await plugins.sectionWiseSummary(req.body.quizId, req.body.uname) // TODO re position it to make i more otimized
+                        } 
+                        resObj = { summaryGenerated: cdata['summaryGenerated'], summaryStats: summaryStats, summary: summary, metadata: metadata, status: 'allow', scoreStatus: metadata.score, reviewStatus: metadata.review }
                     } else {
                         alertMsg = 'You can check your performance summary after ' + endDt;
                         resObj = { summaryGenerated: cdata['summaryGenerated'], summary: summary, metadata: metadata, status: 'unallowed', alert: alertMsg, allowDate: endDt, scoreStatus: metadata.score, reviewStatus: metadata.review }
@@ -1416,7 +1435,7 @@ let quizReview = async (req, res, next) => {
                 res.success({ status: "unallowed", msg: 'Review mode is not allowed.' });
             }
         } else {
-            res.success({ status: "unallowed", msg: 'You can check your review after ' + endDt });
+            res.success({ endTime: metadata.endTime, caption: "caption_isReview", status: "unallowed", msg: 'You can check your review after ' + endDt });
         }
     } catch (err) {
         res.error200(err)
@@ -1483,8 +1502,8 @@ let quizResponse = async (req, res, next) => {
             await utils.dbLog(logObj)
 
             // question statistics
-            let parts= req.body.examId.split("-")
-            resObj['statistics'] = await plugins.getQuizAnalytics(parts[0],parts[1],parts[2])
+            let parts = req.body.examId.split("-")
+            resObj['statistics'] = await plugins.getQuizAnalytics(parts[0], parts[1], parts[2])
             res.success(resObj)
         } else {
             throw utils.generateError({ configCode: 'notSubmitted' })
@@ -1627,20 +1646,20 @@ let studentResetLoginCounter = async (req, res, next) => {
         let tdoc = JSON.parse(JSON.stringify(tkdb.rows[0].value));
         if (tdoc.failedLogin >= 10) {
             // still locked
-            if(tdoc.resetEmailToken){
-                if(tdoc.resetEmailToken == req.body.token){
+            if (tdoc.resetEmailToken) {
+                if (tdoc.resetEmailToken == req.body.token) {
                     tdoc['failedLogin'] = 0;
                     tdoc['token'] = utils.generateToken();
-                    delete  tdoc['resetEmailToken'];
-                    delete  tdoc['resetEmailDate'];
+                    delete tdoc['resetEmailToken'];
+                    delete tdoc['resetEmailDate'];
                     await respdb.insert(tdoc)
                     await utils.dbLog({ uname: req.body.uname, priority: 1, quizId: req.body.quizId, action: "account_unlocked", message: "Account unlocked", useragent: req.useragent })
 
-                    res.success({'message':'Account unlocked'})
-                }else{
+                    res.success({ 'message': 'Account unlocked' })
+                } else {
                     throw utils.generateError({ configCode: 'unauthReq' });
                 }
-            }else{
+            } else {
                 throw utils.generateError({ configCode: 'unauthReq' });
             }
         } else {
@@ -1652,19 +1671,18 @@ let studentResetLoginCounter = async (req, res, next) => {
 }
 module.exports.studentResetLoginCounter = studentResetLoginCounter
 
-let captchaCheck = async (captcha,remoteip)=>{
+let captchaCheck = async (captcha, remoteip) => {
     try {
-        
-        const secretKey = '6LdpvDEUAAAAAHszsgB_nnal29BIKDsxwAqEbZzU';
+
 
         // // Verify URL
         const query = JSON.stringify({
-          secret: await config.get('googleCaptchaSecret'),
-          response: captcha,
-          remoteip: remoteip
+            secret: await config.get('googleCaptchaSecret'),
+            response: captcha,
+            remoteip: remoteip
         });
         const verifyURL = `https://google.com/recaptcha/api/siteverify?${query}`;
-        
+
 
         let reqBody = {
             url: verifyURL,
@@ -1673,8 +1691,8 @@ let captchaCheck = async (captcha,remoteip)=>{
             json: true
         };
         let gResp = await request(reqBody);
-        console.log(gResp)
-        if (gResp.success !== undefined && !gResp.success){
+        // console.log(gResp)
+        if (gResp.success !== undefined && !gResp.success) {
             throw utils.generateError({ configCode: 'captchaFalse' })
         }
         return
@@ -1683,15 +1701,15 @@ let captchaCheck = async (captcha,remoteip)=>{
     }
 }
 
-let sendLoginCredentials = async (req, res, next) =>{
+let sendLoginCredentials = async (req, res, next) => {
     try {
-        await utils.inspectJSON(req.body, { requiredFields: ['user', 'quizId','captcha'], acceptBlank: false, validFields: ['user', 'quizId','captcha'] })
-        
-        // check captcha 
-        await captchaCheck(req.body['captcha'],req.connection.remoteAddress)
+        await utils.inspectJSON(req.body, { requiredFields: ['user', 'quizId', 'captcha'], acceptBlank: false, validFields: ['user', 'quizId', 'captcha'] })
 
-        let input = {quizId:req.body.quizId,user:req.body.user}
-        let quizDoc = await  metadb.get(input.quizId)
+        // check captcha 
+        await captchaCheck(req.body['captcha'], req.connection.remoteAddress)
+
+        let input = { quizId: req.body.quizId, user: req.body.user }
+        let quizDoc = await metadb.get(input.quizId)
 
         if (quizDoc.author == 'unknown') {
             throw utils.generateError({ configCode: 'meta404' })
@@ -1705,7 +1723,7 @@ let sendLoginCredentials = async (req, res, next) =>{
         //     throw utils.generateError({ configCode: 'meta404' })
         // } 
 
-        
+
 
         // var today = new Date();
         // var beginDate = new Date(quizDoc.beginTime);
@@ -1714,39 +1732,39 @@ let sendLoginCredentials = async (req, res, next) =>{
         //    throw utils.generateError({ configCode: 'afterDeadline' }) 
         // }
 
-        if(quizDoc.users.sendEmail==false){
+        if (quizDoc.users.sendEmail == false) {
             throw utils.generateError({ configCode: 'sendEmailFalse' })
         }
 
         // if sendEmail option is set to true , find and generate an array of username and email id
 
         let uObjs = []
-        Object.keys(quizDoc.users.userData).map(ky =>{
+        Object.keys(quizDoc.users.userData).map(ky => {
             let user = {
                 user: ky,
-                email : quizDoc.users.userData[ky][quizDoc.users['emailCol']]
+                email: quizDoc.users.userData[ky][quizDoc.users['emailCol']]
             }
             uObjs.push(user)
         })
         // console.log(uObjs)
 
         // first 
-        let foundUser ;
-        let findByUser = uObjs.find(itm=>{return itm['user']==input['user']})
-        if(!findByUser){
+        let foundUser;
+        let findByUser = uObjs.find(itm => { return itm['user'] == input['user'] })
+        if (!findByUser) {
             //console.log("not found by user")
-            let findByEmail = uObjs.find(itm=>{return itm['email']==input['user']})
-            if(!findByEmail){ 
+            let findByEmail = uObjs.find(itm => { return itm['email'] == input['user'] })
+            if (!findByEmail) {
                 //console.log("not found by email")
                 throw utils.generateError({ configCode: 'meta404_1' })
-            }else{
+            } else {
                 foundUser = findByEmail;
             }
-        }else{
+        } else {
             foundUser = findByUser;
         }
 
-        if(!foundUser){
+        if (!foundUser) {
             throw utils.generateError({ configCode: 'meta404_1' })
         }
 
@@ -1801,31 +1819,31 @@ We hope you enjoy your experience.
 </p>
 ${await config.get("emailTail")}`
 
-// console.log(emailBody)
-    let userEmail  = foundUser['email']// quizDoc.users.userData[foundUser.user][quizDoc.users['emailCol']]
-    let emailHeader = `Examineer.in Credentials for Quiz by ${quizDoc['authorName']}`
-    //console.log(userEmail)
-    //console.log(emailBody)
-    await utils.requestToQuizServer('send_mail', { to: userEmail, sub: emailHeader, body: emailBody })
-    await utils.dbLog({ uname: foundUser['user'], quizId: quizDoc['_id'], message: "Credentials sent to email", action: "credentials_sent", priority: 2, useragent: req.useragent })
+        // console.log(emailBody)
+        let userEmail = foundUser['email']// quizDoc.users.userData[foundUser.user][quizDoc.users['emailCol']]
+        let emailHeader = `Examineer.in Credentials for Quiz by ${quizDoc['authorName']}`
+        //console.log(userEmail)
+        //console.log(emailBody)
+        await utils.requestToQuizServer('send_mail', { to: userEmail, sub: emailHeader, body: emailBody })
+        await utils.dbLog({ uname: foundUser['user'], quizId: quizDoc['_id'], message: "Credentials sent to email", action: "credentials_sent", priority: 2, useragent: req.useragent })
 
-    let smsg = await config.getInner("configMessage","credentials_sent")
-    
-    let protect_email = function (user_email) {
-        var avg, splitted, part1, part2;
-        splitted = user_email.split("@");
-        part1 = splitted[0];
-         part2 = splitted[1]
-        avg1 = part1.length / 2;
-        avg2 = part2.length / 2;
-        part1 = part1.substring(0, (part1.length - avg1));
-        part2 = part2.substring(0,(part2.length - avg2))
-        return part1 + "...@" + part2+"...";
-    };
+        let smsg = await config.getInner("configMessage", "credentials_sent")
 
-    smsg['email'] = protect_email(userEmail)
+        let protect_email = function (user_email) {
+            var avg, splitted, part1, part2;
+            splitted = user_email.split("@");
+            part1 = splitted[0];
+            part2 = splitted[1]
+            avg1 = part1.length / 2;
+            avg2 = part2.length / 2;
+            part1 = part1.substring(0, (part1.length - avg1));
+            part2 = part2.substring(0, (part2.length - avg2))
+            return part1 + "...@" + part2 + "...";
+        };
 
-    res.success(smsg)
+        smsg['email'] = protect_email(userEmail)
+
+        res.success(smsg)
 
     } catch (err) {
         console.log(err)
