@@ -11,10 +11,7 @@ const respdb = nano.db.use('examineer_response')
 const examdb = nano.db.use('examineer_exam')
 
 let index = async (req, res, next) => {
-    // let data = await plugins.getQuizAnalytics('AAKN','1','4')
-    //res.success(data)
     res.success({ message: "Quiz API. Version 2" })
-
 }
 module.exports.index = index;
 
@@ -131,7 +128,7 @@ let checkIfQuizAttempted = (quizid, uname) => {
                  * started: "array of all section start date ["2020..",...]", 
                  * submitted: "date at which quiz was submitted", 
                  * isAttempted: attempted, "whether the quiz is sumbitted or not "
-                 * quizIds: ["AAIR-1-1",...] array of all quiz ids, 
+                 * quizIds: ["ABCD-1-1",...] array of all quiz ids, 
                  * isStarted: "whether the quiz was started or not i.e altest one timestamp exists ", 
                  * startedOn: "time in utc at which the quiz was started, calculated as min of all section" 
                  */
@@ -165,7 +162,6 @@ let login = async (req, res, next) => {
             if (req.body.reqByAuthor[0] == true) {
                 // TODO validate reqbyauthor
                 authorLogin = true;
-                //res.cookie('reqByAuthor', reqCookie, config.get('reqByAuthorCookie'));
             }
         }
 
@@ -272,25 +268,13 @@ let login = async (req, res, next) => {
                     //userArray.push(req.body.quizId + "-" + req.body.uname + '-' + (index + 1))
                     metaData.sections[index]['sectionId'] = input.quiz + "-" + input.user + '-' + (index + 1)
                 })
-                //responseData['userid'] = userArray
             } else {
-                //responseData["userid"] = req.body.quizId + '-' + req.body.uname;
                 metaData.sections[0]['sectionId'] = input.quiz + "-" + input.user
             }
             var today = new Date();
             var beginDate = new Date(metaData.beginTime);
             var endDate = new Date(metaData.endTime);
 
-            // checking if the quiz has started i.e. whether the user can start giving the quiz
-            // user is still allowed to login and view instructions even if the quiz has not yet started
-            //responseData.isBegin = (beginDate > today) ? true : false
-
-            // check if the quiz is over
-            //responseData.isEnd = (endDate > today) ? true : false
-
-            // check if the user is already attempted the quiz
-            // if yes, at the front end the user must be redirected to the summary page
-            // if not, display the instruction page
             responseData.quizAttempted = examData.isAttempted;
             // if not attempted i.e submitted check if statrted
             if (!responseData.quizAttempted) {
@@ -304,12 +288,6 @@ let login = async (req, res, next) => {
             }
 
             responseData.token = usrTkn;  //tokenData.token 
-            // if (responseData.quizAttempted) {
-            //   // quiz already submitted, redirect to summary page
-            //   res.success({ quizAttempted: true, token: usrTkn })
-            // } else {
-            //   res.success(responseData)
-            // }
             res.success(responseData)
         }
     } catch (err) {
@@ -327,16 +305,12 @@ module.exports.login = login
 
 
 var logFailedAttempt = async (options) => {
-    // just send email
-    // console.log("will send email...........")
     try {
         // fetch quiz details  options.quiz + '-' + options.uname
         let quizData = await metadb.get(options.quiz); // TODO use a view later 
         let author = { send: false, email: '', body: '', logMsg: '' };
         let student = { send: false, email: '', body: '', logMsg: {} }
         if (quizData.sendMail) {
-            //onsole.log(quizData.users)
-            // get email if student 
             let userCol = quizData['users']['userCol']
             let emailCol = quizData['users']['emailCol']
             if (quizData['users']['userData'][options.uname]) {
@@ -442,9 +416,6 @@ var addOrModifyRespTokenDoc = (options) => {
             if (today > endDate) {
                 // newpolicy :  login is allowed after deadline
                 // quiz deadline is over
-                // check if response doc for that quiz exists
-                // if not , login not allowed
-                // let qRes = await respdb.view('forResponseDoc', 'quizIdUserIdToResponse1', { key: options.quiz + '-' + options.uname })
                 let cAttempt = await checkIfQuizAttempted(options.quiz, options.user)
                 if (cAttempt.isStarted == false) {
                     // quiz not started
@@ -953,8 +924,6 @@ let saveQuizResponse = async (req, res, next) => {
 
             } else {
                 if (itm.answerId != -1) {
-                    // if question is unlocked, answerId must be -1 
-                    // console.log(JSON.stringify(req.body.resData.response))
                     isRespError.status = true;
                     isRespError.errors.push({
                         msg: "Question unlocked, but answer id is not -1 ",
@@ -1413,7 +1382,6 @@ let quizReview = async (req, res, next) => {
         await utils.inspectJSON(req.body, { requiredFields: ['quizId'], validFields: ['quizId', 'reqByAuthor'] })
 
         if (req.body.reqByAuthor) {
-            // todo authenticate reqbyauthor
             out("reqbyauthr exists")
             return res.success({ status: "allowed", path: '/quiz-response' });
         } else {
@@ -1422,10 +1390,8 @@ let quizReview = async (req, res, next) => {
 
 
         let metadb1 = await metadb.view('exam_meta', 'idToAdvanced', { key: req.body.quizId })
-        // let exammeta = await metadb.view('ByQuizApp','idToQuizMeta',{ key: req.body.quizId })
         utils.checkLength(metadb1.rows, 'exam404')
         let metadata = metadb1.rows[0].value;
-        // metadata['calculator'] = exammeta.rows[0].value.calculator
         var ct = new Date();
         var endDt = new Date(metadata.endTime.toString());
         if (ct > endDt) {
@@ -1718,19 +1684,6 @@ let sendLoginCredentials = async (req, res, next) => {
         if (quizDoc.status != 'active') {
             throw utils.generateError({ configCode: 'inact' })
         }
-
-        // if (!quizDoc['credentials'][input.user]) {
-        //     throw utils.generateError({ configCode: 'meta404' })
-        // } 
-
-
-
-        // var today = new Date();
-        // var beginDate = new Date(quizDoc.beginTime);
-        // var endDate = new Date(quizDoc.endTime);
-        // if (today > endDate) {
-        //    throw utils.generateError({ configCode: 'afterDeadline' }) 
-        // }
 
         if (quizDoc.users.sendEmail == false) {
             throw utils.generateError({ configCode: 'sendEmailFalse' })
