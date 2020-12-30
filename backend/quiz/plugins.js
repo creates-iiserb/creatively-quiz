@@ -13,24 +13,24 @@ let getQuestionData = async (quizId) => {
         let sectData = await metadb.view('ByAuthor', 'idToSectionData', { key: quizId });
         let sect = sectData.rows[0].value;
         let partialGrading = {}
-        sect['sections'].map((itm,index)=>{
-            if(itm.hasOwnProperty("partialGrading")){
-                partialGrading[index+1] = itm['partialGrading']
-            }else{
-                partialGrading[index+1] = false
+        sect['sections'].map((itm, index) => {
+            if (itm.hasOwnProperty("partialGrading")) {
+                partialGrading[index + 1] = itm['partialGrading']
+            } else {
+                partialGrading[index + 1] = false
             }
         })
         let vals = []
-        data['rows'].map(itm => { 
+        data['rows'].map(itm => {
             // to include partial scores to scores 
-            if(partialGrading[itm['value']['section']]==true){
-                if(itm['value'].hasOwnProperty("partial")){
+            if (partialGrading[itm['value']['section']] == true) {
+                if (itm['value'].hasOwnProperty("partial")) {
                     itm['value']['score'] += itm['value']['partial']
                 }
             }
-            vals.push(itm['value']) 
+            vals.push(itm['value'])
         })
-        return { rows: vals, gradingMatrix: metadata['gradingMatrix'], partialGrading:partialGrading }
+        return { rows: vals, gradingMatrix: metadata['gradingMatrix'], partialGrading: partialGrading }
     } catch (error) {
         throw error
     }
@@ -59,7 +59,7 @@ let getQuizAnalytics = async (quizId, user, sectionId) => {
 
             let Status = {};
             let gradeFlag = false;
-            let time =0, score =0 
+            let time = 0, score = 0
             let correct = 0, incorrect = 0, skipped = 0;
             let Nohelp = 0, hintonly = 0, Bothused = 0;
 
@@ -67,7 +67,7 @@ let getQuizAnalytics = async (quizId, user, sectionId) => {
             let correct_nohelpused = 0, Incorrect_nohelpused = 0, skipped_nohelpused = 0;
 
             let GM = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-            var Sumtime = 0, SumScore = 0,Mintime =0,Maxtime=0,Minscore =0 ,Maxscore=0; 
+            var Sumtime = 0, SumScore = 0, Mintime = 0, Maxtime = 0, Minscore = 0, Maxscore = 0;
 
             // part 1: to generate data for the user 
 
@@ -77,8 +77,8 @@ let getQuizAnalytics = async (quizId, user, sectionId) => {
             // TODO see if we need to check lock value of not
             if (userData) {
                 // data found 
-                time =  userData.timeTaken ;
-                score=   userData.score;
+                time = userData.timeTaken;
+                score = userData.score;
                 Status['queType'] = userData.type
                 Status['userTimeTaken'] = userData.timeTaken
                 Status['userScore'] = userData.score
@@ -182,18 +182,18 @@ let getQuizAnalytics = async (quizId, user, sectionId) => {
             Status.Total = Total
             Status.Time =
             {
-              Min : Mintime,
-              Max : Maxtime,
-              Avg : averageTime,
-              yours: time
+                Min: Mintime,
+                Max: Maxtime,
+                Avg: averageTime,
+                yours: time
             }
-            Status.Score=
+            Status.Score =
             {
-              
-              Min : Minscore,
-              Max : Maxscore,
-              Avg : Averagescore,
-              yours: score
+
+                Min: Minscore,
+                Max: Maxscore,
+                Avg: Averagescore,
+                yours: score
             }
             stats[ref] = Status
         })
@@ -210,7 +210,7 @@ module.exports.getQuizAnalytics = getQuizAnalytics;
 let getSectionSummaryData = async (quizId) => {
     try {
         // returns score of all sections 
-        let data = {records: [], meta: {} }
+        let data = { records: [], meta: {} }
         let viewData = await examdb.view('ByQuizId', "summaryPlus", { key: quizId })
         viewData['rows'].map(itm => {
             data.records.push(itm.value)
@@ -247,43 +247,168 @@ let secondToString = (given_seconds) => {
     return timeString
 }
 
+
+
+//Overview Statistics
+let Overviewanalysis = async (data, user) => {
+    let uniqueSec = Array.from(Array(data.meta.sections.length), (x, index) => index + 1)
+    users = []
+    //Output Format
+    results = {
+
+        'OverviewStats': {
+            scores:[], //scores of all students, this data is mainly for histogram
+            Time: {
+                Min: 0,
+                Max: 0,
+                Avg: 0,
+                yours: 0
+            },
+            Score: {
+                Min: 0,
+                Max: 0,
+                Avg: 0,
+                yours: 0
+            },
+            partialGrading: false,
+            Totalquestions: 0,
+            TotalmarksAlloted: 0
+        }
+    }
+    //Filter data with summary property
+    Secsummarydata =  data.records.filter(item=> item.hasOwnProperty('summary') && (item.attempted ===true))
+
+    Totalquestions = 0, TotalmarksAlloted = 0
+    //Total questions and total marks alloted in the quiz
+    uniqueSec.forEach(s => {
+        firstsecdata = Secsummarydata.find(ele => (ele.section == s))
+        // console.log(firstsecdata,s)
+        Totalquestions+=firstsecdata.summary ? 0 :firstsecdata.summary.total 
+        TotalmarksAlloted += !firstsecdata.summary ? 0 : firstsecdata.summary.max
+    })
+
+
+
+  //users of the quiz
+  let userdata= data.records.filter(ele => ele.attempted==true)
+  //console.log(userdata)
+  let Usersset=new Set()
+  userdata.forEach(item=> Usersset .add(item.taker) )
+  Users = [...Usersset]
+  //console.log(Users)
+  //Loop for each user
+
+
+    //Loop for each user
+    Users.forEach(usr => {
+       
+        SumTime = 0
+        SumScore = 0
+        obj = {
+            user: usr,
+            Timetaken: 0,
+            Scored: 0
+        }
+
+        Userdata = Secsummarydata.filter(item => item.taker == usr)
+
+        //Loop for each section of user
+        uniqueSec.forEach(sec => {
+            Secdata = Userdata.filter(item => item.section == sec) //User Section data
+
+            partialGrading = data.meta.sections[sec - 1].partialGrading != undefined ? data.meta.sections[sec - 1].partialGrading : false
+
+            //Quiz is said to have partial grading when atleast one section has partial grading else no partial grading
+            results.OverviewStats.partialGrading = partialGrading | results.OverviewStats.partialGrading ? true : false
+
+            //accumulator for calc each user's time taken and score obtained
+            SumTime = Secdata.reduce((sum, p) => sum + NumberofSeconds(p.summary.time), SumTime)
+            SumScore = Secdata.reduce((sum, p) => partialGrading == true ? sum + p.summary.score + p.summary.partialScores : sum + p.summary.score, SumScore)
+
+
+        })
+        obj.Timetaken = SumTime //Time taken by each user to finish the quiz
+        obj.Scored = SumScore //Score obtained by each user at the end of quiz
+        users.push(obj)
+
+    })
+    //For calc min ,max set the initial values to first user's time and score
+    initminT = (users[0].Timetaken)
+    initmaxT = (users[0].Timetaken)
+    initminS = (users[0].Scored)
+    initmaxS = (users[0].Scored)
+    results.OverviewStats.Time.Min = users.reduce((min, p) => p.Timetaken < (min) ? p.Timetaken : (min), (initminT))
+    results.OverviewStats.Time.Max = users.reduce((max, p) => p.Timetaken > (max) ? p.Timetaken : (max), (initmaxT))
+    results.OverviewStats.Score.Min = users.reduce((min, p) => p.Scored < (min) ? p.Scored : (min), (initminS))
+    results.OverviewStats.Score.Max = users.reduce((max, p) => p.Scored > (max) ? p.Scored : (max), (initmaxS))
+    results.OverviewStats.Time.Avg = parseFloat((users.reduce((Sum, p) => Sum + p.Timetaken, 0) / Users.length).toFixed(2))
+    results.OverviewStats.Score.Avg = parseFloat((users.reduce((Sum, p) => Sum + p.Scored, 0) / Users.length).toFixed(2))
+    users.forEach(i=>results.OverviewStats.scores.push(i.Scored))
+
+    //For the input parameter "user", calc the time and score
+    usrobj = users.find(ele => (ele.user == user))
+    // console.log(usrobj)
+    results.OverviewStats.Time.yours = usrobj.Timetaken
+    results.OverviewStats.Score.yours = usrobj.Scored
+    results.OverviewStats.Totalquestions = Totalquestions
+    results.OverviewStats.TotalmarksAlloted = TotalmarksAlloted
+
+    return results
+}
+
 let sectionWiseSummary = async (quizId, user) => {
     let data = await getSectionSummaryData(quizId);
-   // console.log(JSON.stringify(data,null,2))
+   //  console.log(JSON.stringify(data,null,2))
     //FinalOutput
     let resultData = {
         generatedOn: new Date(),
-        stats: {}
+        stats: {},
+        overview: {}
     }
-
-    let totalsectime = 0
-    let totalsecscore = 0;
 
     //getting uniques section numbers from JSON data
     let uniqueSec = Array.from(Array(data.meta.sections.length), (x, index) => index + 1)
 
-    // console.log(uniqueSec)
     //Looping over each section's data
     uniqueSec.forEach(Section => {
-        let sectiondata = [], minT = '', maxT = '', minS = 0, maxS = 0
-        // console.log(Section)
+        let totalsectime = 0
+        let totalsecscore = 0;
+       
+        let sectiondata = []
         if (!resultData['stats'][Section]) {
             resultData['stats'][Section] = {
-                Time: {Min: 0, Max: 0,Avg: 0,your: 0},
-                Score: {Min: 0,Max: 0,Avg: 0,your: 0},
-                Count:{
-                    Total: 0, // total number of students who took part in the quiz 10 meta.student.length
-                    Submitted: 0, // total number of students who have submitted the quiz i.e. submittedOn exists 
-                    Attempted: 0 // total number of students who attempted the section i.e.  startedOn exists 
+
+                Time: {
+                    Min: 0,
+                    Max: 0,
+                    Avg: 0,
+                    yours: 0
+                },
+                Score: {
+                    Min: 0,
+                    Max: 0,
+                    Avg: 0,
+                    yours: 0
+
+                },
+                Count:
+                {
+                    Total: 0,
+                    Submitted: 0,
+                    Attempted: 0
                 },
                 partialGrading: false
+
             }
         }
 
         //Storing each section data in to "sectiondata" 
-        sectiondata = data.records.filter(item => (item.section) === Section)
+        sectiondata = data.records.filter(item=>( item.section  === Section) &&(item.attempted == true))
+
         //Storing summary data of each section in "secSummaryData" 
         secSummaryData = sectiondata.filter(item => item.hasOwnProperty('summary'))
+
+
 
         //setting initial values for min and max comparison
         initminT = (secSummaryData[0].summary.time)
@@ -292,11 +417,11 @@ let sectionWiseSummary = async (quizId, user) => {
         initmaxS = (secSummaryData[0].summary.score)
 
         //Min and Max of time and Score  
-        resultData['stats'][Section].Time.Min = secSummaryData.reduce((min, p) => p.summary.time < min ? p.summary.time : min, initminT)
-        resultData['stats'][Section].Time.Max = secSummaryData.reduce((max, p) => p.summary.time > max ? p.summary.time : max, initmaxT)
+        resultData['stats'][Section].Time.Min = secSummaryData.reduce((min, p) => NumberofSeconds(p.summary.time) < (min) ? NumberofSeconds(p.summary.time) : (min), NumberofSeconds(initminT))
+        resultData['stats'][Section].Time.Max = secSummaryData.reduce((max, p) => NumberofSeconds(p.summary.time) > (max) ? NumberofSeconds(p.summary.time) : (max), NumberofSeconds(initmaxT))
         resultData['stats'][Section].Score.Min = secSummaryData.reduce((min, p) => p.summary.score < min ? p.summary.score : min, initminS)
         resultData['stats'][Section].Score.Max = secSummaryData.reduce((max, p) => p.summary.score > max ? p.summary.score : max, initmaxS)
-        resultData['stats'][Section].partialGrading = data.meta.sections[Section - 1].partialGrading ? data.meta.sections[Section - 1].partialGrading : false
+        resultData['stats'][Section].partialGrading = data.meta.sections[Section - 1].partialGrading != undefined ? data.meta.sections[Section - 1].partialGrading : false
 
         /* 
         For each section , all the below are calculated
@@ -308,21 +433,27 @@ let sectionWiseSummary = async (quizId, user) => {
         */
         sectiondata.forEach(rec => {
             if (rec.summary != undefined) {
+
                 totalsectime += NumberofSeconds(rec.summary.time)
-                totalsecscore += rec.summary.score + rec.summary.partialScores ? (resultData['stats'][Section].partialGrading) : rec.summary.score
+                totalsecscore += resultData['stats'][Section].partialGrading? (rec.summary.score + rec.summary.partialScores)   :  rec.summary.score
+
                 if (rec.taker == user) {
-                    resultData['stats'][Section].Time.your = rec.summary.time
-                    resultData['stats'][Section].Score.your = rec.summary.score
+                    resultData['stats'][Section].Time.yours = NumberofSeconds(rec.summary.time)
+                    resultData['stats'][Section].Score.yours = rec.summary.score
                 }
             }
 
             resultData['stats'][Section].Count.Submitted += (Object.keys(rec).indexOf('submittedOn') > -1) ? 1 : 0
             resultData['stats'][Section].Count.Attempted += (Object.keys(rec).indexOf('startedOn') > -1) ? 1 : 0
+
         })
-        resultData['stats'][Section].Count.Total = sectiondata.length
-        resultData['stats'][Section].Time.Avg = secondToString((totalsectime / sectiondata.length).toFixed(2))
-        resultData['stats'][Section].Score.Avg = Number((totalsecscore / sectiondata.length).toFixed(2))
+        resultData['stats'][Section].Count.Total = data.meta.students.length  
+        resultData['stats'][Section].Time.Avg = parseFloat((totalsectime / sectiondata.length).toFixed(2))
+        resultData['stats'][Section].Score.Avg = parseFloat((totalsecscore / sectiondata.length).toFixed(2))
+
     })
+    let ov = await Overviewanalysis(data, user)
+   resultData.overview = ov["OverviewStats"]
     // console.log(resultData.stats)
     return resultData
 }
