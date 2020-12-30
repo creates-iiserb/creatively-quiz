@@ -6,7 +6,7 @@
     - `dbServer` : URL of the couchDb data base
     - `configName`: name of database where other configs are located
     - `configDocName` : id of the record that contains the records 
-- To run the server. : `nam start`
+- To run the server. : `npm start`
 
 **Realtime log server (/realTimeServer)**
 - run `npm install`
