@@ -77,7 +77,13 @@ router.use(function (req, res, next) {
 
 router.post('/login', (req, res) => {
  // console.log(1)
-  let data = { quizId: req.body.quizId, uname: req.body.user, pwd: req.body.password }
+  let data = { quizId: req.body.quizId, uname: req.body.user }
+  if(req.body.password){
+    data["pwd"]= req.body.password
+  }
+  if(req.body.altPwd){
+    data["altPwd"]= req.body.altPwd
+  }
   //  console.log(data)
   request.post({
     url: config.quizServer + '/login', body: data, json: true, headers: {
@@ -199,7 +205,8 @@ router.post('/submitQuiz', (req, res) => {
 
 
 router.post('/summary', (req, res) => {
-  let data = { quizId: req.body.quizId, uname: req.body.user }
+  let data = { quizId: req.body.quizId, uname: req.body.user , isSection:req.body.isSection, submitReason:req.body.submitReason }
+  // 'quizId', 'uname', 'isSection', 'reqByAuthor', 'submitReason'
   request.post({
     url: config.quizServer + '/summary', body: data, json: true, headers: {
       'Content-Type': 'application/json',
@@ -244,6 +251,20 @@ router.post('/quizResponseData', (req, res) => {
   })
 })
 
+router.post('/raiseTicket', (req, res) => {
+  let data = {examId:req.body.examId, ref:req.body.ref,issue:req.body.issue}
+  // 'examId', 'ref', 'issue', 'index'
+  request.post({
+    url: config.quizServer + '/raiseTicket', body: data, json: true, headers: {
+      'Content-Type': 'application/json',
+      'authToken': req.get('authToken'),
+      'appAgent': req.get('appAgent'),
+      'clientIP': req['clientIP']
+    }
+  }, function (err, httpResponse, body) {
+    res.json(body)
+  })
+})
 
 router.post('/exitQuiz', (req, res) => {
   let data = { quizId: req.body.quizId, uname: req.body.user ,message:req.body.message}
@@ -259,5 +280,42 @@ router.post('/exitQuiz', (req, res) => {
     res.json(body)
   })
 })
+
+router.post('/user_login', (req, res) => { 
+  request.post({
+    url: config.quizServer + '/user/login', body: req.body, json: true, headers: {
+      'Content-Type': 'application/json',
+      'appAgent': req.get('appAgent'),
+      'clientIP': req['clientIP']
+    }
+  }, function (err, httpResponse, body) {res.json(body)})
+})
+
+router.get('/user_ping', (req, res) => { 
+  request.get({
+    url: config.quizServer + '/user/ping', body: req.body, json: true, headers: {
+      'Content-Type': 'application/json',
+      'appAgent': req.get('appAgent'),
+      'clientIP': req['clientIP'],
+      'loginToken': req.get('loginToken'),
+    }
+  }, function (err, httpResponse, body) {res.json(body)})
+})
+
+router.post('/user_details', (req, res) => { 
+  request.post({
+    url: config.quizServer + '/user/details', 
+    body: req.body, 
+    json: true, 
+    headers: {
+      'Content-Type': 'application/json',
+      'appAgent': req.get('appAgent'),
+      'clientIP': req['clientIP'],
+      'loginToken': req.get('loginToken')
+    }
+  }, function (err, httpResponse, body) {res.json(body)})
+})
+
+
 
 module.exports = router;

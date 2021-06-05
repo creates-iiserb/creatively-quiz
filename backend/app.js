@@ -11,6 +11,8 @@ var utilities = require('./services/utilities')
 var appMw = require('./services/middlewares')
 
 var routes = require('./quiz/routes');
+var gradeRoutes = require('./grade/routes');
+var userRoutes = require('./user/routes')
 var useragent = require('express-useragent');
 
 var app = express();
@@ -56,6 +58,8 @@ app.use(function (req, res, next) {
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(appMw.responseHandler)
+app.use('/grader',gradeRoutes)
+app.use('/user',userRoutes)
 app.use('/', routes);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
