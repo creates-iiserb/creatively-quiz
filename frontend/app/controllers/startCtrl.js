@@ -4,12 +4,12 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
     $scope.isStarted = false;   
     $scope.proceedBtn = true;
     $rootScope.absFirstQuizStart = false;
-    
+    let preClock = null;
     $scope.showTimer = false;
     $scope.startQuiz('start');
     let isManualSubmit = false;
     $scope.chkBeforeTime = function (beginTime) {
-       
+        //var d = new Date;
         var d = $scope.getClock();
         var beginDt = new Date(beginTime);
         if (d > beginDt) {
@@ -33,7 +33,7 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
     
     $scope.$on('$stateChangeStart', function(e, toState, toParams, fromState, fromParams) {        
         if(!$scope.proceedBtnDisableSQ){  
-           if( (fromState.name=='start' && toState.name=='quiz') || (fromState.name=='start' && toState.name=='root') ){
+            if( (fromState.name=='start' && toState.name=='quiz') || (fromState.name=='start' && toState.name=='root') ){
                 e.preventDefault();   
                 history.pushState(null,null, window.location.origin + window.location.pathname+"#start");
                 
@@ -43,8 +43,12 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
                     confirmButtonClass: "btn btn-warning btn-fill"
                 });
                 
-           }
-         }
+            }
+        }
+        if(preClock){
+            $interval.cancel(preClock);
+            preClock = null;
+        }
     });
     
 
@@ -70,7 +74,7 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
         quizId:dataService.getData('QUIZID')
     }
 
-    
+    ////////// time management - aamir/////////
     $scope.setAndCheckEndTime = function () {
         var endMarker = new Date($rootScope.ETIME);
         var duration = +$rootScope.DURATION;
@@ -88,14 +92,15 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
                 helperService.notifyMsg('ti-alert', 'warning',$scope.lang.msg_timeUp , 'top', 'center');
             }
             $scope.proceedBtn = false;  
-            return true; 
+            return true; //open model
         }        
         return false;
     }
 
      $scope.quizTimerCounterEndMsg = false;
      $scope.qdeadLineNotOverButNotYetStart = false;
-   
+    //$scope.getClockTime();
+    
     requestService.request('POST',true,'/quizTime',data).then(function(response){ 
             dataService.getYtVideo(); 
             dataService.getPlotChart(); 
@@ -119,7 +124,7 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
             }
             //////time logic start from here-aamir////
             var result = response.data;
-           
+            $rootScope.consoleData(result,'/quizTime-sc');   
             $rootScope.updateTime(result.time);
 
             if(result.status){
@@ -128,18 +133,20 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
                 $scope.isStarted = data.isStarted; 
                 $scope.secSummary = data.secSummary;
                                    
-                $scope.sectionStarted = data.sectionStarted; 
+                $scope.sectionStarted = data.sectionStarted; //check each section is started;
+
                 let meStartQuizOn = data.startedOn;
-               
+                // check begin time validation
                 var beginTime = new Date($rootScope.BTIME);
                 var currentTime = $scope.getClock();
                 if(beginTime>currentTime){
                     var msg = $scope.lang.msg_beforeLoginTime + beginTime + ".";
                     helperService.notifyMsg('ti-alert', 'warning', msg, 'top', 'center',5000);
                     $scope.proceedBtn = false;
-                   
+                    //==============clock================//
                     $scope.showTimer = true;                           
-                    var preClock = $interval(function(){
+                    preClock = $interval(function(){
+                        console.log('test');
                         var now = $scope.getClock(); 
                         var distance = beginTime - now
                         var days = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -175,7 +182,7 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
 
                       },1000)
 
-                  
+                    //==============end of clock========//
 
                 }else{
                     
@@ -187,19 +194,19 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
                         $scope.session_begin_time = new Date($rootScope.startedOn);
                     } else {
                         $scope.session_begin_time = new Date($scope.getClock());               
-                        
+                        //not sure this block-aamir
                         if($scope.isStarted){ 
                             $scope.session_begin_time.setSeconds($scope.session_begin_time.getSeconds() - $scope.timeUsed);
                         }                    
                     }
 
-                    
+                    //it show when user start the quiz
                     let meStartQuiz = $filter("toLocalTime")(meStartQuizOn);
                     $scope.meStartQuizMsg = $filter('findReplace')($scope.lang.caption_submitQuiz,{'###': meStartQuiz});
                     
                     
                     if($scope.setAndCheckEndTime()){
-                        
+                        //$scope.isStarted= true;
                         $scope.notifyOrSubmit();
                     }else{
                         if(!$scope.isStarted){
@@ -211,12 +218,15 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
                 }                    
 
             }else{
-               
+                //db error handler
                 requestService.dbErrorHandler(result.error.code,result.error.type);             
             }
 
             $timeout(function(){
                 $scope.isLoad = true;
+                if($("#switchQuiz")){
+                    $("#switchQuiz").trigger('mouseover');
+                }
             },1000);
  
         },function(errorResponse){
@@ -250,7 +260,7 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
             $scope.deadLineOver = true;
             $scope.qdeadLineNotOverButNotYetStart = false;
             $scope.quizTimerCounterEndMsg = false;
-            
+            //logout after 5 min if quiz deadline is over and not started quiz
             $timeout(()=>{
               dataService.loggoutWithReason('loggedOut');
             },300000);
@@ -319,7 +329,9 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
    }
 
 
-    
+    //correct ans gradingMatrix 0 index
+    //skip ans gradingMatrix 1 index
+    //wrong ans gradingMatrix 2 index
 
     $scope.chkEndDate = function () {
         var d = new Date($scope.getClock());
@@ -335,7 +347,7 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
     $scope.isSubmitClick =  false;
     $scope.quizFinalSubmit = function(){
         
-        
+        //"clear timer"- Because it will call even if we change route in SPA ---aamir
         $interval.cancel($scope.submitInterval);
         $scope.isSubmitClick =  true;
         var data = {
@@ -347,7 +359,7 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
         $(".pageLoader").show();
         requestService.request('POST',true,'/submitQuiz',data).then(function(response){
             var result = response.data;
-            
+            $rootScope.consoleData(result,'/submitQuiz-sc');   
             $rootScope.updateTime(result.time);
             $scope.isSubmitClick =  false;
             if(result.status){
@@ -356,15 +368,16 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
                     dataService.setData('VIEWRES',true);
                 }
                 
-                         
+                ////close overlay////                
                 $('.overlay-div').css("visibility", "hidden");
                 $("body").css("overflow","");
                 $('#secQuizSummaryMdl').modal('hide');
-               
-                $scope.proceedBtnDisableSQ = true;
+                //////////////////////
+                $scope.proceedBtnDisableSQ = true; // enable route
                 $location.path('quiz-summary');
             }else{
-                
+                // var msg = "Connection to the server is lost.Please login and resubmit your quiz";
+                // dataService.swalAndRedirect(msg,'warning','btn-warning','loggedOut');
                 requestService.dbErrorHandler(result.error.code,result.error.type);
                 $(".pageLoader").fadeOut("slow");
             }
@@ -408,7 +421,7 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
         }
     }
 
-    
+    // to proceed to quiz on clicking proceed button on instruction page
     $scope.proceedBtnDisableSQ = false;
     $scope.proceedButton = function (quizid) {
         if($scope.checkCurrTimeWithEndTime()){
@@ -445,8 +458,9 @@ app.controller('startCtrl', ['$scope', '$http', '$rootScope', '$location', '$sta
         $scope.lang = data.language; 
     })
 
-   
-   
-}]);
+    $scope.checkLoginEmail = function(){
+        return sessionStorage.getItem('loginToken')?true:false;
+    }
 
+}]);
 

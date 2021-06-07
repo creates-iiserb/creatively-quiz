@@ -1,4 +1,4 @@
-
+//summaryCtrl.js
 app.controller('summaryCtrl',['$scope', '$http', '$rootScope', '$location', '$interval','$timeout','$window','$filter','dataService','helperService','requestService' ,function ($scope, $http, $rootScope, $location, $interval,$timeout,$window,$filter,dataService,helperService,requestService) {
    
     $scope.lang = $rootScope.language;
@@ -11,12 +11,12 @@ app.controller('summaryCtrl',['$scope', '$http', '$rootScope', '$location', '$in
         $scope.reqBy = 'auth';
     }
 
-   
+    //Logged Out
     $scope.loggedOut = function () {
         dataService.loggoutWithReason('loggedOut');
-    }
+    }//End Logged Out
 
-   
+    //disable back buttons
     $scope.$on('$stateChangeStart', function(e, toState, toParams, fromState, fromParams) {
         if(fromState.name=='quiz-summary' && (toState.name=='root' || toState.name=="quiz" )){
                 e.preventDefault();   
@@ -40,19 +40,20 @@ app.controller('summaryCtrl',['$scope', '$http', '$rootScope', '$location', '$in
         var reqdata = { 'uname': dataService.getData('USER'), 'quizId': dataService.getData('QUIZID') };
         requestService.request('POST',true,'/summary',reqdata).then(function(response){
             var result = response.data;
-            
+            $rootScope.consoleData(result,'/summary-ac'); 
 
             if (result.status) {
                 var data = result.data;
                 if (data.scoreStatus == 'submission') {
-                   
+                    //  Allow scores immediately after submission and allow review after quiz deadline
                     $scope.showSumm = true;   
                     if(data.hasOwnProperty('summaryGenerated')){
                         $scope.isSummaryGenerated(data.summaryGenerated); 
                     }
                                         
                 } else if (data.scoreStatus == 'deadline' && data.status == 'allow') {
-                   
+                    // Allow scores and review after deadline
+                    // deadline over make score visible
                     $scope.showSumm = true;  
                     if(data.hasOwnProperty('summaryGenerated')){
                         $scope.isSummaryGenerated(data.summaryGenerated); 
@@ -60,7 +61,9 @@ app.controller('summaryCtrl',['$scope', '$http', '$rootScope', '$location', '$in
 
                 }
                 else if (data.scoreStatus == 'deadline' && data.status == 'unallowed') {
-                    
+                    // Allow scores and review after deadline
+                    // deadline over make score visible
+                    // data converter copied from authoring , quizcontrol
                     var begindate1 = new Date(data.allowDate);
                     var time3 = begindate1.toString().split(" ")[4];
                     var month =[ "Jan", "Feb", "Mar", "Apr","May", "Jun", "Jul", "Aug","Sep", "Oct", "Nov","Dec"];
@@ -73,20 +76,33 @@ app.controller('summaryCtrl',['$scope', '$http', '$rootScope', '$location', '$in
                     var date3 = getstartDate3 + " " + getstartMonth3 + " " + getstartFullYear3;
                     var deadLineDate = date3 + " " + time3.substring(0, 5);
                     $scope.deadLineDate = deadLineDate;
-                   
+                    //$scope.altSummaryMessage = $scope.lang.scoreAfterDeadline+" "+ deadLineDate;
                     $scope.showSumm = false; 
                     $scope.alertMSG = 1;                      
                 }
-                else if (data.scoreStatus == 'unallowed' && data.reviewStatus == 'unallowed') {   $scope.alertMSG = 2;  
-                                          
+                else if (data.scoreStatus == 'unallowed' && data.reviewStatus == 'unallowed') {
+                    //$scope.altSummaryMessage =  $scope.lang.scoreNotAllowed;
+                    $scope.alertMSG = 2;  
+                    //Do not allow scores or review
+                    //$scope.showSumm = false;;                        
                 }
 
                 if ($scope.showSumm) {
                     $scope.summaryDetailsObj = data.summary;
                     
-                    
+                        //for section quiz
                     var summKeys = Object.keys($scope.summaryDetailsObj);
-                    $scope.isPartialFields = data.summary[summKeys[0]].hasOwnProperty('pending')?true:false;
+                    //check for pending question
+                    $scope.havePending = false;
+                    for (const key in data.summary) {
+                        if (data.summary[key].hasOwnProperty('pending') && data.summary[key].pending>0) {
+                            $scope.havePending = true;
+                        }
+                    }
+                    
+                    $scope.hasCorrection = false;
+                    $scope.totalCorrection = 0;
+                    $scope.summaryStats = {};
                     
                     if(summKeys.length>1){
                         $scope.summArr = [];
@@ -110,15 +126,30 @@ app.controller('summaryCtrl',['$scope', '$http', '$rootScope', '$location', '$in
                         summKeys.forEach((key,index) =>{
                             let allowPartialGrading = $rootScope.sections[index].partialGrading;
                             var summData = {};
+                            let correction = 0;
                             summData = $scope.summaryDetailsObj[key];
 
+                            summData['hasSecCorrection'] = false;
+                            if(summData.hasOwnProperty('corrections')){
+                                $scope.totalCorrection += summData.corrections;
+                                $scope.hasCorrection = true;
+                                correction = summData.corrections
+                                summData['hasSecCorrection'] = true;
+                            }
+
+                            summData['allowPartialGrading'] = false;
+                            summData.score += correction; //add correction
+                            $scope.totalScore += summData.score; //update total score = score+correction
                             if(allowPartialGrading){
-                                $scope.totalScore += summData.score + summData.partialScores; 
+                                $scope.totalScore += summData.partialScores; 
                                 summData.score += summData.partialScores;
                                 summData['allowPartialGrading'] = true;
-                            }else{
-                                $scope.totalScore += summData.score; 
-                                summData['allowPartialGrading'] = false;
+                            }
+                            summData.score =  Number.isInteger(summData.score)?summData.score:summData.score.toFixed(2);
+
+                            summData['hasTicket'] = false;
+                            if(summData.hasOwnProperty('tickets')){
+                                summData['hasTicket'] = true;
                             }
 
                             $scope.totalMaxScore += summData.max;
@@ -134,7 +165,7 @@ app.controller('summaryCtrl',['$scope', '$http', '$rootScope', '$location', '$in
                             $scope.totalIncorrect+=incorrect;
                             $scope.totalCorrect+= correct;
                             $scope.totalHelpUsed+= help;
-                          
+                            // calculate all time taken
                             var dArr = summData.time.split(":");
                             allSec = allSec+  (+dArr[0]) * 60 * 60 + (+dArr[1]) * 60 + (+dArr[2]);
                             var secIndex = $scope.sections.findIndex(x=>x.sectionId == key );
@@ -147,42 +178,60 @@ app.controller('summaryCtrl',['$scope', '$http', '$rootScope', '$location', '$in
                             if(summData.hasOwnProperty('gradable')){
                                 $scope.totalGradableContent += summData.gradable;
                             }
-                            if(summData.hasOwnProperty('pending')){
+                            summData['hasPending'] = false;
+                            if(summData.hasOwnProperty('pending') && summData.pending>0){
                                 $scope.totalPendingForGrade += summData.pending;
+                                summData['hasPending'] = true;
                             }
 
                             if(summData.hasOwnProperty('totalSub')){
                                 $scope.totalSub +=  summData.totalSub;
                             }
-                            
+
+                           
                             $scope.summArr.push(summData);
                         });
 
                         
-                        
+                        $scope.totalScore = Number.isInteger($scope.totalScore)?$scope.totalScore:$scope.totalScore.toFixed(2);
+
                         date.setSeconds(allSec);
                         var allTimeTaken = date.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
                         $scope.totalTimeTaken =allTimeTaken;
-                        $scope.summaryStats = {};
                         if(data.hasOwnProperty('summaryStats')){
                             $scope.summaryStats = data.summaryStats;
                             $scope.generateSummarGraph(data.summaryStats,'sectioned');
                         }
                     }else{
-                       
-                        $scope.summaryStats = {};
+                        //summKeys is plain exam id means AAF9-1;
                         $scope.summaryDetailsObj = data.summary[summKeys[0]];
                         let allowPartialGrading = $rootScope.sections[0].partialGrading;
+                        
+                        if($scope.summaryDetailsObj.hasOwnProperty('corrections')){
+                            $scope.hasCorrection = true;
+                            $scope.totalCorrection = $scope.summaryDetailsObj.corrections;
+                           
+                        }
+
+                        $scope.summaryDetailsObj["score"] +=  $scope.totalCorrection; //add correction
                         if(allowPartialGrading){
                             $scope.summaryDetailsObj["score"] = $scope.summaryDetailsObj["score"] + $scope.summaryDetailsObj["partialScores"];
                             $scope.summaryDetailsObj["allowPartialGrading"] = true;
                         }else{
                             $scope.summaryDetailsObj["allowPartialGrading"] = false;
                         }
+
+                        $scope.summaryDetailsObj["score"] = Number.isInteger($scope.summaryDetailsObj["score"]) ? $scope.summaryDetailsObj["score"]: $scope.summaryDetailsObj["score"].toFixed(2);
+
                         $scope.plainSecID = summKeys[0];
                         if(data.hasOwnProperty('summaryStats')){
                             $scope.summaryStats = data.summaryStats.overview;
                             $scope.generateSummarGraph(data.summaryStats,'plain');
+                        }
+
+                        $scope.summaryDetailsObj['hasTicket'] = false;
+                        if($scope.summaryDetailsObj.hasOwnProperty('tickets')){
+                            $scope.summaryDetailsObj['hasTicket'] = true;
                         }
                         
                     }
@@ -192,11 +241,14 @@ app.controller('summaryCtrl',['$scope', '$http', '$rootScope', '$location', '$in
                 
 
             } else {
-              
+                //$scope.altSummaryMessage = $scope.lang.caption_noSummary;
                 $scope.alertMSG = 3;
                 requestService.dbErrorHandler(result.error.code,result.error.type);
             }
             $(".pageLoader").fadeOut("slow");
+            if($("#switchQuiz")){
+                $("#switchQuiz").trigger('mouseover');
+            }
         },function(responseError){
            console.log('Server Error');
            console.log(JSON.stringify(responseError,null,2));
@@ -235,26 +287,30 @@ app.controller('summaryCtrl',['$scope', '$http', '$rootScope', '$location', '$in
                     dataService.createGuage(data.stats[sec],"averagescore",`${quizType}_SummAvgSCRgarph_${sec}`);
                 }
 
-               
-                const histogram = `${quizType}_mark_distribution`;
-                const scores = data.overview.scores;
-                const trace = {
-                    x: scores,
-                    type: 'histogram',
-                };
-                const layout = {
-                    title: "Mark Distribution", 
-                    xaxis: {title: "Marks",fixedrange: true}, 
-                    yaxis: {title: "No. of Students",fixedrange: true},
-                    bargap: 0.03, 
-                };
-                const config = {
-                    responsive: true,
-                    displayModeBar: false
-                };
-                Plotly.newPlot(histogram, [trace],layout,config);
+                /////histogram chart
+                // const histogram = `${quizType}_mark_distribution`;
+                // const scores = data.overview.scores;
+                // const trace = {
+                //     x: scores,
+                //     type: 'histogram',
+                //     // marker: {
+                //     //     color: 'rgb(122, 158, 144,0.5)',
+                //     // }
+                    
+                // };
+                // const layout = {
+                //     title: "Mark Distribution", 
+                //     xaxis: {title: "Marks",fixedrange: true}, 
+                //     yaxis: {title: "No. of Students",fixedrange: true},
+                //     bargap: 0.03, 
+                // };
+                // const config = {
+                //     responsive: true,
+                //     displayModeBar: false
+                // };
+                // Plotly.newPlot(histogram, [trace],layout,config);
 
-            
+                //histrogram chart
                
                
 
@@ -262,16 +318,16 @@ app.controller('summaryCtrl',['$scope', '$http', '$rootScope', '$location', '$in
         }
     }
 
-   
+    //View Response after quiz submition
     $scope.viewResBtn = false;
     $scope.viewResponse = function (sectionId) {
         $scope.viewResBtn = true;
-       
+        //dataService.setData('ACTIVEQUIZ',sectionId);
         $rootScope.activeQuiz = sectionId;
         var reqdata = { 'quizId': dataService.getData('QUIZID') };
         requestService.request('POST',true,'/isReview',reqdata).then(function(response){
             var result = response.data;
-             
+            $rootScope.consoleData(result,'/isReview-sc');   
             if(result.status){
                 var data = result.data;
                 if (data.status == "allowed") {
@@ -279,7 +335,7 @@ app.controller('summaryCtrl',['$scope', '$http', '$rootScope', '$location', '$in
                     $location.path(data.path);
                 } else {
                     let endTime  = $filter("toLocalTime")(data.endTime);
-                  
+                    //let msg = $filter('findReplace')($scope.lang[data.caption],endTime);
                     let msg = $filter('findReplace')($scope.lang[data.caption],{'###': endTime});
                     dataService.setData('VIEWRES', false);
                     helperService.notifyMsg('ti-alert', 'warning', msg, 'top', 'center',5000);
@@ -350,6 +406,9 @@ app.controller('summaryCtrl',['$scope', '$http', '$rootScope', '$location', '$in
         $scope.lang = data.language; 
     })
 
-}]);
+    $scope.checkLoginEmail = function(){
+        return sessionStorage.getItem('loginToken')?true:false;
+    }
 
+}]);
 

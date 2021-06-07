@@ -1,7 +1,13 @@
-app.controller('authCtrl',['$scope', '$rootScope', '$timeout','$location', '$stateParams','$ocLazyLoad','requestService','helperService','dataService','$window' ,function ($scope, $rootScope, $timeout,$location, $stateParams,$ocLazyLoad,requestService,helperService,dataService,$window) {
+//authentication-ctrl.js
+app.controller('authCtrl',['$scope', '$rootScope', '$timeout','$location', '$stateParams','$ocLazyLoad','requestService','helperService','dataService','$window' ,function ($scope, $rootScope, $timeout,$location, $stateParams,$ocLazyLoad,requestService,helperService,dataService,$window) {    
+   
     $("#logcurrentYear").html(new Date().getFullYear());
     $.notifyClose();
     $scope.lang = $rootScope.language;
+
+   
+
+    //load required js/jquery file 
     $ocLazyLoad.load(
         ['assets/custom/login.js','https://www.google.com/recaptcha/api.js'],
         {cache: false}
@@ -10,6 +16,7 @@ app.controller('authCtrl',['$scope', '$rootScope', '$timeout','$location', '$sta
     $scope.logReq = false;
 
     $scope.chkEndTime = function (endTime) {
+        //var d = new Date;
         var d = $scope.getClock();
         var endDt = new Date(endTime);
         if (d < endDt) {
@@ -27,7 +34,8 @@ app.controller('authCtrl',['$scope', '$rootScope', '$timeout','$location', '$sta
             }
         }
     }
-  
+
+    //Login Function 
     $scope.getlogin = function () {  
         $.notifyClose();  
         $scope.logReq = true;
@@ -38,21 +46,28 @@ app.controller('authCtrl',['$scope', '$rootScope', '$timeout','$location', '$sta
             dataService.setData('reqByAuthor',JSON.stringify($scope.userData.reqByAuthor));   
         } else {
             $scope.userData = $scope.user;
+            //if author and student login both uses same machine then we have clear out 
+            // author cookies
             dataService.removeData('reqByAuthor'); 
+            sessionStorage.removeItem('loginToken')
         }
 
         
-        
+        // quiz id  must always be in uppercase
         $scope.userData.quizId = $scope.userData.quizId.toUpperCase();
+        //call request(method,withCredential,apiURL,data)
         requestService.request('POST',true,'/login',$scope.userData).then(function(response){ 
             var result = response.data;
-              
+            $rootScope.consoleData(result,'/login-ac');   
             $rootScope.updateTime(result.time);
 
             if(result.status){  
                 var data = result.data;
+                // user can log in , show instruction page
                 dataService.setData('quizType', data.quizType);
+                //check internet connection
                 dataService.checkInternet(); 
+                //check direct window close event
                 if(data.hasOwnProperty('userData')){
                     $rootScope.userDetail =  data.userData;
                 }else{
@@ -63,7 +78,7 @@ app.controller('authCtrl',['$scope', '$rootScope', '$timeout','$location', '$sta
                 
                 dataService.setData('USER', $scope.userData.uname);
                 dataService.setData('ATTEMPT', data.quizAttempted);
-                dataService.setData('LOGGEDIN', 1);   
+                dataService.setData('LOGGEDIN', 1);   // flag , which indicated user is logged in
                 dataService.setData('QUIZID', $scope.userData.quizId.toUpperCase()); 
                 
                 dataService.setData('ISSECTION', data.isSections);                
@@ -96,18 +111,27 @@ app.controller('authCtrl',['$scope', '$rootScope', '$timeout','$location', '$sta
                 $rootScope.bTime = new Date(data.beginTime).toString();
                 $rootScope.eTime = new Date(data.endTime).toString();
 
-               
+                //set quiz language
+                //$scope.changeLanguage('hindi');
+
+                //Check quiz attempted or not. If ture then redirct to summary else quiz
                 if (data.quizAttempted == true) {
+                    // user has already attemplted the quiz
                     if ($scope.chkEndTime(data.endTime)) {
+                        // checking if review is allowed
                         dataService.setData('VIEWRES', true);
                     }
+                    // redired to /quiz-summary page
+                  
                     $location.path("/quiz-summary");
                 } else {
                     $rootScope.startedOn = data.startedOn;
                     $rootScope.loginTime = data.loginTime;
-                    
+                    //Reidirect to quiz  start page
                     if(data.quizType=="live"){ 
                         $location.path("/livequiz");
+                        //dataService.setData('CalType', data.calc);
+                       // dataService.setData('InstData', data.sections);  
                     }
                     else{
                         $location.path("/start");
@@ -117,6 +141,7 @@ app.controller('authCtrl',['$scope', '$rootScope', '$timeout','$location', '$sta
               
 
             }else{  
+                //requestService.dbErrorHandler(result.error.code,result.error.type);
                 helperService.notifyMsg('ti-alert', result.error.type, $rootScope.language[result.error.code], 'top', 'center',5000);
                 $scope.logReq = false;
                 
@@ -143,7 +168,10 @@ app.controller('authCtrl',['$scope', '$rootScope', '$timeout','$location', '$sta
         },2000)
     });
 
-  
+
+    
+
+    // retreive credential
     $scope.isSubGCFrm = false;
     $scope.sendCredetial = function(){
         let captcha = document.getElementsByName("g-recaptcha-response")[0].value;
@@ -187,12 +215,16 @@ app.controller('authCtrl',['$scope', '$rootScope', '$timeout','$location', '$sta
             grecaptcha.reset();
         });
     }
+    //end of retrieve credentials
+
     
     $scope.gotoLoginPage = function(){
         $window.location.href = window.location.origin + window.location.pathname;
     }
 
 
+
+    //check browser is mozila firfox
     var e, i = navigator.appName,
         r = navigator.userAgent,
         o = r.match(/(opera|chrome|safari|firefox|msie|trident)\/?\s*(\.?\d+(\.\d+)*)/i);
@@ -215,8 +247,9 @@ app.controller('authCtrl',['$scope', '$rootScope', '$timeout','$location', '$sta
         }, 300);
 
     }
-   
+    
+    //end of browser is mozila firefox
+
    
 }]);
-
 

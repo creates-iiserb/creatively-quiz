@@ -1,9 +1,13 @@
-app.config(['$urlRouterProvider','$locationProvider', '$stateProvider', function ($urlRouterProvider,$locationProvider, $stateProvider) {
+app.config(['$urlRouterProvider','$locationProvider', '$stateProvider','socialProvider', function ($urlRouterProvider,$locationProvider, $stateProvider,socialProvider) {
     //base url
+    let host = window.location.host;
+    let gkey = 'insert google api here'; 
+    socialProvider.setGoogleKey(gkey);
+    //console.log(gkey);
     var path = window.location.origin + window.location.pathname + '#';
     $locationProvider.hashPrefix('');
     $urlRouterProvider.otherwise('/');
-    const version = 4.3;
+    const version = 5.4;
     $stateProvider
         .state('root', {  
             resolve: {
@@ -12,6 +16,10 @@ app.config(['$urlRouterProvider','$locationProvider', '$stateProvider', function
                        'assets/css/login.min.css?v='+version
                      ]);
                 }
+                // ,
+                // check: function(dataService) {
+                //     dataService.clearAll(false);
+                // }
             },
             url: '/',
             templateUrl: 'app/views/newlogin.html?v='+version,
@@ -74,6 +82,7 @@ app.config(['$urlRouterProvider','$locationProvider', '$stateProvider', function
             resolve: {
                 loadDepedency: function ($ocLazyLoad) {
                     return $ocLazyLoad.load([
+                        'assets/css/grading.min.css?v='+version,
                         'assets/js/math.min.js',
                         'assets/custom/calculator.js',
                         'assets/js/Chart.min.js',
@@ -101,10 +110,25 @@ app.config(['$urlRouterProvider','$locationProvider', '$stateProvider', function
             templateUrl: 'app/views/quizpage.html?v='+version,
             controller: 'quizCtrl'
         })
+        .state('grading', {
+            resolve: {
+                loadDepedency: function ($ocLazyLoad) {
+                    
+                    return $ocLazyLoad.load([
+                        'assets/css/grader.min.css?v='+version,
+                        'assets/css/fetchLoader.min.css',
+                    ]);
+                },
+                
+            },
+            url: '/grading',
+            templateUrl: 'app/views/grader.html?v='+version,
+            controller: 'graderCtrl'
+        })
         .state('start', {
             resolve: {
                 authrefresh:AuthAndRefresh,
-                check: CheckAttempt
+                check: CheckAttempt //quizStarted condition not add here like previous code
                 
             },            
             url: '/start',
@@ -134,17 +158,37 @@ app.config(['$urlRouterProvider','$locationProvider', '$stateProvider', function
             templateUrl: 'app/views/resetToken.html?v='+version,
             controller: 'resetTokenCtrl'
         })
-        
+        .state('quizList', {
+            resolve: {
+                loadDepedency: function ($ocLazyLoad) {
+                    return $ocLazyLoad.load([
+                        'assets/css/quizList.min.css?v='+version,
+                    ]);
+                }
+            },
+            url: '/quizList',
+            templateUrl: 'app/views/quizList.html?v='+version,
+            controller: 'quizListCtrl'
+        })
+        // .state('exit', {           
+        //     url: '/exit',
+        //     templateUrl: 'app/views/quizSubmitted.html?v='+version,
+        //     controller: 'authentication'
+        // })
 
-      
-        function AuthAndRefresh(dataService,$state,$q,$rootScope,$timeout){
+        //////////////authenticate user and page refresh///////
+        function AuthAndRefresh(dataService,$state,$q,$rootScope,$timeout){            
+            //authorization   
+           // console.log('Is user login');                    
             if(+dataService.getData('LOGGEDIN') !== 1 ){
                 $timeout(function() {
                     dataService.clearAll(true);
                     },0);
                 return $q.reject();
             }
-           
+            //page refresh
+            //console.log('check page refresh');
+           // console.log($rootScope.instruction);
             if (typeof $rootScope.instruction === 'undefined' || $rootScope.instruction == null) {
 
                     swal({
@@ -154,7 +198,11 @@ app.config(['$urlRouterProvider','$locationProvider', '$stateProvider', function
                     confirmButtonClass: "btn btn-warning btn-fill"
                     }).then(function () {
                     $timeout(function() {
-                        dataService.loggoutWithReason('reload');
+                        if(sessionStorage.getItem('loginToken')){
+                            $state.go('quizList');
+                        }else{
+                            dataService.loggoutWithReason('reload');
+                        }
                     },0);
                    });
                    return $q.reject();
@@ -162,8 +210,9 @@ app.config(['$urlRouterProvider','$locationProvider', '$stateProvider', function
             return $q.when()
         }             
        
-        
+        //////////check Quiz is attempted or not //////////
         function CheckAttempt($q,dataService,$state,$timeout) {
+           // console.log(dataService.getData('ATTEMPT')); 
             if (+dataService.getData('LOGGEDIN') == 1 && dataService.getData('ATTEMPT') == true) {
                 $timeout(function() {
                     $state.go('quiz-summary')
@@ -182,27 +231,49 @@ app.config(['$urlRouterProvider','$locationProvider', '$stateProvider', function
             }
         }
 
-       
+        
 
         
 }]);
   
     
 var socket;
+//Quiz App Global Data Members and Functions
 app.run(function ($rootScope, $cookies, $http,$location,dataService) {
-
+//console.log('app.run');
 var clock = new Date(0);
 
 $rootScope.language = {};
+//--Base URL --use
+
 angular.element(document).ready(function () {
     $http.get("services/configEnv.json").then(function (res) {
+        //console.log('app.run --http');
+        //console.log(res);
         $rootScope.configData = res.data;
+        //console.log('==============');
         dataService.clearAllLS(['subjective']);
         dataService.setData('cookieBaseUrl',$rootScope.configData.baseUrl);
         dataService.setData('cookieSocketUrl',$rootScope.configData.liveUrl);
 
         $rootScope.getClockTime();
         var language = 'default';
+        // if(typeof(Storage) !== "undefined") {
+        //     if (sessionStorage.language) {
+        //         language = sessionStorage.language;
+        //     }
+        // }    
+
+        // socket = io.connect($rootScope.configData.liveUrl,{
+        //     reconnection:true,
+        //     reconnectionAttempts:50,
+        //     reconnectionDelay:2000,
+        //     transports:['websocket'],
+        //     rejectUnauthorized:false,
+        //     upgrade:false,
+        //     agent:false
+        // });
+
         socket = io.connect($rootScope.configData.liveUrl,{
             reconnectionDelay:5000
         });
@@ -220,6 +291,9 @@ $rootScope.changeLanguage = function (lang='default') {
        $rootScope.getLangData(lang);
 }
 
+
+//Clock Function
+//Getting time from the server --use
 $rootScope.getClockTime = function () {
     $http.post($rootScope.configData.baseUrl + "/time").then(function (response) {
         var data = response.data.data;        
@@ -229,6 +303,8 @@ $rootScope.getClockTime = function () {
     })
 }
 
+
+//Getting Language from the server --use
 $rootScope.getLangData = function (language) {    
     var data = {language:language};    
     $http.post($rootScope.configData.baseUrl + "/global",data).then(function(response) { 
@@ -237,6 +313,7 @@ $rootScope.getLangData = function (language) {
         $rootScope.language.copyRight = data.copyright;
         $rootScope.$broadcast('changeUILanguage',{language:data.language,copyRight:data.copyRight});
     },function(error) {
+        //to ensure that data is coming from the sever the first time page is loaded
        alert('Unable to connect to server. Check your internet connection. The page will continue refreshing until connection with the server is established');
        location.reload(true);
     });
@@ -289,5 +366,12 @@ $rootScope.consoleData = function (data,title=''){
     } 
 };
 
-
 });
+
+// app.config(function(socialProvider){
+   
+//     console.log('app.config');
+//     let host = window.location.host.split('.');
+//     let gkey = host[host.length-1]=="in"?'998389535624-gvjhidkrda4q2eif4k8hqmhm1dnnhl6p.apps.googleusercontent.com':'998389535624-a7tm5aejfqhsm79rk8ucrp3c0gjgqqpb.apps.googleusercontent.com';
+//     socialProvider.setGoogleKey(gkey);
+// });

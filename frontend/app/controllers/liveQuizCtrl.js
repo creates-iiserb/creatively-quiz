@@ -1,8 +1,11 @@
-
+//"use strict";
+//Quiz-Controller: quizCtrl starts from here
 app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$rootScope','$location','dataService','helperService','requestService','$window','$state','$cookies','$sce', function ($scope,$timeout, $interval, $compile, $rootScope,$location,dataService,helperService,requestService,$window,$state,$cookies,$sce) {
-    const version = 4.3;
-    $scope.lang = $rootScope.language;
-    $scope.quizState = 'notStart';
+    const version = 5.4;
+    $scope.lang = $rootScope.language;    
+    //variable declartions;
+    $scope.quizState = 'notStart'; 
+    //notStart/question/wait/quizInst/sectionInst/ansOnly/ciAns/statAns/all/ciOnly/statCI/statOnly/offline
     $scope.btnConnect = false;
     var quizId = dataService.getData('QUIZID');
     var studentId = dataService.getData('USER');    
@@ -20,7 +23,9 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     $scope.mm = "00";
     $scope.ss = "00";
     $scope.flashCards = [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]];
-    $scope.isAnswerGiven = false;
+    $scope.isAnswerGiven = false; //set true when answer is given
+
+    //it is use only load fill type questions otherwise no use
     $scope.currentPage = 1;
     $scope.questions= [{}];
 
@@ -28,6 +33,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     $scope.showYoutubeChatBtn = false;
     $scope.showWiteBoardBtn = false;
     $scope.currentSection = -1;
+    //end of variables declartions;
     $scope.changeRoute = false;
     $scope.$on('$stateChangeStart', function(e, toState, toParams, fromState, fromParams) {
         if(!$scope.changeRoute){
@@ -42,17 +48,26 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
                  });
                  
             }
+            if(fromState.name == 'livequiz' && toState.name =='quizList'){
+                if(startInterval){
+                    $interval.cancel(startInterval);
+                }
+                //clear timer
+                $scope.cancelTimerData();
+                
+            }
         }
          
     });
 
    
-    $scope.sectionInst = $rootScope.sections; 
+    $scope.sectionInst = $rootScope.sections; // dataService.getData('InstData'); 
     $scope.secStatus = {};
     for(let i = 0; i<=$scope.sectionInst.length-1; i++){
         $scope.secStatus[i] = false;
     }
-    
+   
+    /***Calculator */
     $("#calc").draggable({
         containment: "#lqBodyId"
     });
@@ -106,7 +121,9 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
         $("#" + id).toggle();
     }
 
-    
+    /***End of Calculater */
+   
+    //on focus change
     if(!$scope.allowFC){
         $(window).on('blur', function () {
             
@@ -125,7 +142,12 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }
 
     $scope.cancelTimerData = function(){
-        
+        console.log("cancelTimerData");
+       
+        // if(timer){
+        //     $interval.cancel(timer); 
+        // }
+
         if(typeof(w) != "undefined") {
             w.terminate();
             w = undefined;
@@ -136,12 +158,12 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
         $scope.cancelTimerData();
 
         if($scope.time !=$scope.infiniteTime){   
-                           
+            //aakT                    
             
             w = new Worker("app/controllers/stdTimeInterval_sw.min.js");
             w.onmessage = function(event) {
                 $scope.$apply(function(){
-                       
+                        //console.log(event.data);
                     $scope.time -= 1000;
                     var millis = $scope.time;            
                     var hh = Math.floor(millis / 36e5);
@@ -191,7 +213,8 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
         return allowStatus.includes($scope.quizState);
     }
 
-   
+    
+    //score = correct | incorrect
     $scope.checkInScoreMode = function(){
         let allowStatus = ['ciAns','all','ciOnly','statCI'];
         return allowStatus.includes($scope.quizState);
@@ -223,10 +246,11 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
          $scope.timeTaken = $scope.timeTaken + ($scope.getTimeDiff() / 1000);
     }
 
-   
+    // end of time function
+
     $scope.validateForm = function () {
-        
-        var inputCount = document.getElementById('divFillInBlank').getElementsByTagName('input').length;
+        console.log("F-validateForm");
+        var inputCount = document.getElementById('divFillInBlank').getElementsByTagName('input').length;//get the number of input tags
         var temp = false;
         let fillIn = 'allBlank';
         for (var i = 0; i < inputCount; i++) {
@@ -243,7 +267,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
             status: false,
             msg:''
         }
-       
+        //partial grading is allow
         if($scope.sectData.partialGrading){
             if(fillIn == 'partialFill'){
                 obj.status = true;
@@ -270,9 +294,11 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
 
     
     $scope.Lock = function () {
+        console.log("F-Lock");
+        // for fill In type Questions
         if ($scope.filteredQuestions.type == 'fillIn') {
                 let fillinData = $scope.validateForm()
-                if (!fillinData.status) {
+                if (!fillinData.status) {//check wheterher all the blanks are filled
                     let option = {
                         placement : {
                             from: "top",
@@ -290,7 +316,9 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
                     var inputCount = document.getElementById('divFillInBlank').getElementsByTagName('input').length;
                     var temp = {};
                     for (var i = 0; i < inputCount; i++) {
+                        // find the name and value of the input tag.
                         var name = document.getElementById('divFillInBlank').getElementsByTagName('input')[i].getAttribute("name");
+                        //Added By: ABHIMANYU
                         var type = document.getElementById('divFillInBlank').getElementsByTagName('input')[i].getAttribute("type");
                         var value = document.getElementsByName(name)[0].value;
                         if (type == 'number') {
@@ -310,15 +338,17 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
                 }
             
         }
-        else if ($scope.filteredQuestions.type == 'arrange') { 
+        else if ($scope.filteredQuestions.type == 'arrange') { // For arrange type questions.
+           
                 var tmp = [];
                 tmp = $scope.arrangeType;
                 for (var i = 0; i < tmp.length; i++) {
                     tmp[i] = Math.abs(tmp[i]);
                 }
-                $scope.selectAns($scope.arrangeType);
+                $scope.selectAns($scope.arrangeType);//store the answer. 
+                //This store temporary ans
                 $scope.tempAns = $scope.arrangeType;
-                $scope.lock = true;
+                $scope.lock = true;//set locked    
                 return true;        
             
         }
@@ -368,7 +398,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }
 
     $scope.submitAns = function(){
-       
+        console.log("F-submitAns");
         token = dataService.getData('TOKEN');
         if($scope.Lock()){    
             $scope.disableTimerAfterSubmit(true);
@@ -387,7 +417,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     let iViewNotify = null;
     $scope.iViewDisable = false;
     $scope.iViewed = function(){
-        
+        console.log("F-iViewed");
         token = dataService.getData('TOKEN');
         if(iViewNotify){
             iViewNotify.close();
@@ -422,7 +452,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
         }
 
         if($scope.Lock()){  					
-          
+            console.log("I viewed");
             $scope.getEndTime();
             $scope.getTotalTime();
             $scope.makeResponse(true);    
@@ -457,12 +487,12 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
         }
         
         $scope.response.tempAns = $scope.tempAns;        
-       
+        //console.log($scope.response);
     }
 
 
     $scope.submitDefaultAns = function(){  
-      
+        console.log("F-submitDefaultAns");
         token = dataService.getData('TOKEN');      
         $scope.getEndTime();
         $scope.getTotalTime();
@@ -473,7 +503,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }
 
     $scope.pauseQuiz = function(){
-       
+        console.log("F-pauseQuiz");
         if($scope.quizState=="question"){
 
            if(!$scope.isAnswerGiven){
@@ -485,8 +515,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     
 
     $scope.disableTimerAfterSubmit = function(btnConnect){
-       
-
+        console.log("F-disableTimerAfterSubmit");
         if(btnConnect){
             $scope.btnConnect = false;
             btnCounter = 0;
@@ -511,7 +540,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }
 
     $scope.disableTimer = function(btnConnect){
-      
+        console.log("F-disableTimer");
         if(btnConnect){
             $scope.btnConnect = false;
             btnCounter = 0;
@@ -554,7 +583,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }
 
     $scope.stopQuizClock = function(){
-       
+        console.log("stopQuizClock");
         $scope.cancelTimerData();
         $scope.hh = "00";
         $scope.mm = "00";
@@ -563,7 +592,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
 
    
     $scope.checkQuizIsLive = function(){
-       
+        console.log("F-checkQuizIsLive");
         if(startInterval){
             $interval.cancel(startInterval);
         }
@@ -574,7 +603,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
             if(startCounter%15==0){                
                 $scope.joinQuiz();                        
             }
-            
+            //loggout automatically after 10 minute if user is not connected
             if(startCounter>=10*60){
                 $interval.cancel(startInterval);
                 startCounter=0;
@@ -584,7 +613,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }
 
     $scope.getSectionInstr = function(sec){
-      
+        console.log("F-getSectionInstr");
         var sectionId = quizId+"-"+studentId+"-"+sec;
         var secIndex =  $scope.sectionInst.findIndex(x=>sectionId==x.sectionId);
         $scope.currentSection = secIndex;
@@ -646,7 +675,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
             if(divFillInBlank){
                 var inputCount = document.getElementById('divFillInBlank').getElementsByTagName('input').length;
                 for (var i = 0; i < inputCount; i++) {
-                   
+                    // find the name and value of the input tag.
                     var name = document.getElementById('divFillInBlank').getElementsByTagName('input')[i].getAttribute("name");
                     $scope.questions[$scope.currentPage -1] = $scope.filteredQuestions;
                     $scope.questions[$scope.currentPage - 1].object[name] = $scope.tempAns[name];
@@ -670,7 +699,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
             $scope.ansHelpAllowed = $scope.sectionInst[data.meta.secId-1].helpAllowed;
             
             $scope.attendQuestion = true;
-            $scope.isAttempt = data.stdAns.response.lock;
+            $scope.isAttempt = data.stdAns.response.lock;  // if question is lock then it is attempted          
             $scope.timeTaken = data.stdAns.response.timeTaken;            
             $scope.hintUsed = data.stdAns.response.helpUsed;
             $scope.answSelected = data.stdAns.response.answerId;
@@ -728,7 +757,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }
 
 
-     
+     // load response of subjective 
      $scope.countCharacter = function(strData){
         let str = strData.toString();
         str = str.replace(/[&]nbsp[;]/gim," ")
@@ -792,7 +821,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }
 
     $scope.setUpQuestion = function(data,isStart){
-      
+        console.log("setUpQuestion");
         $scope.quizMode = 'quiz';
         $scope.queslsSubKey = `${quizId}${studentId}${data.meta.secId}${data.meta.quesId}`.toLowerCase();
         $scope.filteredQuestions = data.quizData;
@@ -818,7 +847,17 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
         }
 
         if ($scope.filteredQuestions.type === 'fillIn') {
-            $scope.questions= [{}];
+            $scope.questions= [{}]; 
+            // if($scope.sectData.partialGrading){
+            //     let option = {
+            //         placement : {
+            //             from: "top",
+            //             align: "center"
+            //         }
+            //    };
+            //    $scope.notifyAlertMsg('partialBlankInfo',$scope.lang.msg_partialBlanks,option);
+            // }
+
         }
         
         if($scope.filteredQuestions.type === 'sub'){
@@ -856,7 +895,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }
 
     $scope.setUpQuizInst = function(data,isStart){
-        
+         console.log('F-setUpQuizInst');
         if(isStart){
             $scope.quizState = "quizInst";             
             $scope.loadOtherMedia();    
@@ -865,7 +904,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }
 
     $scope.setUpSecInst = function(data,isStart){
-       
+        console.log('F-setUpSecInst');
         $scope.selectSection = data.meta.secId;
         $scope.sectData = $scope.getSectionInstr(data.meta.secId);
         if(isStart){
@@ -880,7 +919,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     let chart1 = null;
     let chart2 = null;
     $scope.setUpStats = function(data,isShow){
-       
+        console.log("F-setUpStats");
         var secData = $scope.getSectionInstr(data.secId);        
         $scope.statsHelpAllowed = secData.helpAllowed;
         $scope.gradeStats = data.stats;
@@ -897,6 +936,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
             const graphTitle = 'Question';
             const graphEleId = 'statsChart';
             const graphLabels = ['Attempted', 'Skipped'];
+            //// graphData = totalAttempt ,totalSkipped //////
             const graphData = [$scope.gradeStats[0][3],$scope.gradeStats[1][3]];
             const graphColors = [
                 '#7AC29A',
@@ -920,6 +960,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
             const graphTitle = 'Answers';
             const graphEleId = 'statsChart';
             const graphLabels = ['Correct', 'Incorrrect', 'Skipped'];
+            //// graphData = totalCorrect ,totalSkipped,totalIncorrect //////
             const graphData = [$scope.gradeStats[0][3],$scope.gradeStats[2][3],$scope.gradeStats[1][3] ];
             const graphColors = [
                 '#7AC29A',
@@ -950,12 +991,13 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     $scope.drawAnsQuestGraph = function(graphEleId,graphLabels,graphData,graphTitle,graphColors){
         let statsChart = document.getElementById(graphEleId).getContext('2d');
         chart1 = new Chart(statsChart, {
-            type:'pie', 
+            type:'pie', // bar, horizontalBar, pie, line, doughnut, radar, polarArea
             data:{
             labels:graphLabels,
             datasets:[{
                 
                 data:graphData,
+                //backgroundColor:'green',
                 backgroundColor:graphColors,
                 borderWidth:1,
                 borderColor:'#777',
@@ -1024,6 +1066,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
                 datasets:[{
                     
                     data:data,
+                    //backgroundColor:'green',
                     backgroundColor:backgroundColor,
                     borderWidth:1,
                     borderColor:'#777',
@@ -1064,7 +1107,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }
 
     $scope.setUpPlay = function(data,isStart){
-      
+        console.log("F-setUpPlay");
         let type = data.meta.type;
         $scope.time = data.meta.time;
         if(type=="question"){                        
@@ -1093,14 +1136,14 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
 
  
    
-   
+    // youtube chatbox,videbox
     let prevVidStatus = false;
     let prevChatStatus = false;
     let youtubeVidVar = null;
     let youtubeChatVar = null;
    
     $scope.setUpYoutubeBox = function(data){
-       
+        console.log("F-setUpYoutubeBox");
         if(data.hasOwnProperty('video') || data.hasOwnProperty('chat')){
             let isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
             $scope.showYoutubeVidBtn = data.video;
@@ -1124,6 +1167,8 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
                     });
 
                     let vUrl = `https://www.youtube.com/embed/${data.youtubeId}?autoplay=1`;
+                    /* let html = `<iframe src="${vUrl}" id="liveVideo" width="100%" height="100%" scrolling="no"  frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen  srcdoc="<style>*{padding:0;margin:0;overflow:hidden}html,body{height:100%}img,span{position:absolute;width:100%;top:0;bottom:0;margin:auto}span{height:1.5em;text-align:center;font:48px/1.5 sans-serif;color:white;text-shadow:0 0 0.5em black}</style><a href=https://www.youtube.com/embed/${data.youtubeId}?autoplay=1><img src=https://img.youtube.com/vi/${data.youtubeId}/hqdefault.jpg alt='Videobox'><span>â–¶</span></a>"></iframe>`; */
+                 
                     let html = `<iframe id="liveVideo" width="100%" height="100%" scrolling="no"  src="${vUrl}" frameborder="0" allowfullscreen></iframe>`; 
                     $( "#youtubeVideoBox" ).html(html);
 
@@ -1180,6 +1225,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
                         }
                     });
                     $("#youtubeChatBox").html(html);
+                    //$("#youtubeChatBox").css({display:'flex'});
                     $timeout(()=>{
                         $("#youtubeChatBox" ).dialog( "option", {
                             minHeight: 367,
@@ -1210,7 +1256,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }
 
     $scope.openYoutubeVidBox = function(){
-       
+        console.log("F-openYoutubeVidBox");
         if(youtubeVidVar){
             $( "#youtubeVideoBox" ).dialog( "option", {
                 minWidth: 320,
@@ -1222,7 +1268,8 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
                     at: "left top",
                     of: "#lqSideScreen",
                     collision: "fit fit",
-                   
+                    // using: function( pos, pos1 ) {
+                    // }
                 }
             });
             $( "#youtubeVideoBox" ).dialog("open");
@@ -1230,7 +1277,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }
 
     $scope.closeYoutubeBox = function(){
-       
+        console.log("F-closeYoutubeBox");
         if(youtubeVidVar){
             youtubeVidVar = null;
             $("#youtubeVideoBox").dialog('destroy');
@@ -1249,9 +1296,9 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }
 
     $scope.openYoutubeChatBox = function(){
-      
+        console.log("F-openYoutubeChatBox");
         if(youtubeChatVar){
-           
+            //$("#youtubeChatBox").css({display:'flex'});
             $("#youtubeChatBox" ).dialog( "option", {
                 height:372,
                 position: {
@@ -1265,7 +1312,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
         }
     }
 
-   
+    //end of youtube chatbox videobox
 
     $scope.divideView = function(st=false){
         if($scope.showYoutubeVidBtn || $scope.showYoutubeChatBtn || $scope.showWiteBoardBtn){
@@ -1326,11 +1373,11 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }, true);
 
     
-  
+    // white board
     let preWhiteboardStatus = false;
     let whiteboardVar =  null;
     $scope.setUpWhiteBoard = function(data){
-        
+        console.log("F-setUpWhiteBoard");
         $scope.showWiteBoardBtn = data;
         if(data !== preWhiteboardStatus){
             if(data){
@@ -1408,11 +1455,11 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
         $scope.showWiteBoardBtn = false;
     }
 
-   
+    //end of whiteboard
 
 
     $scope.openSecInstr = function(type,sec=1){
-       
+        console.log("F-openSecInstr");
         if(type=="quiz"){
             $("#quizInstuction").modal();
             for (const i in $scope.secStatus) {
@@ -1429,15 +1476,15 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
         if(type == "section"){
             $scope.sectionNumber = sec;
             $scope.sectData = $scope.getSectionInstr(sec);         
-          
+           // console.log($scope.sectData);   
             $("#secInstuction").modal()
         }
     }
     
 
-    
+    // step 2 : connect manually with quiz
     $scope.connectQuiz = function(){
-      
+        console.log("F-connectQuiz")
         $scope.btnConnect = true;
         btnInterval =  $interval(()=>{
             btnCounter++;
@@ -1451,7 +1498,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
 
     }
 
-   
+    //set the hint used
     $scope.setHintUsed = function () {
         if ($scope.hintUsed == 0) {
             if ($scope.filteredQuestions.type != 'info') {
@@ -1466,11 +1513,11 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
                 };
                 $scope.notifyAlertMsg('infoHint',$scope.lang.caption_hintInfo,option);
             }
-            
+            //$scope.hintUsed[id - 1] = 1;
         }
     }
 
-   
+    //set the explnation used.    
     $scope.setExpUsed = function () {
         if ($scope.filteredQuestions.type != 'info') {
             if ($scope.hintUsed == 1)
@@ -1538,7 +1585,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
             $scope.showHintFlag = showDiv;
         }
 
-       
+        //////////add by aamir to scroll top;/////////
         if($("#quiz-hint").length>0)
         {   
             if(!$scope.divideView()){
@@ -1611,7 +1658,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
             }
         }
 
-      
+        ////////add by aamir 11-03-2019 ///////////
         if($("#quiz-explanation").length>0)
         { 
             if(!$scope.divideView()){
@@ -1640,9 +1687,9 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
         }
     }
 
-    $scope.getClockTime(); 
+    $scope.getClockTime(); //fetch server clock time for sync
     $scope.joinQuiz = function(){
-       
+        console.log("F-joinQuiz");
         token = dataService.getData('TOKEN');  
         socket.emit('std_lqJoinQuiz', {quizId,token,studentId}, function(res) {
             $scope.$apply(function(){
@@ -1660,7 +1707,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
                         $scope.setUpPlay(res,true);
                     }else{
                         if(res.error){
-                            alert(res.error); 
+                            alert(res.error); //error
                         }
                     }
 
@@ -1681,7 +1728,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
 
 
     $scope.loggedOut = function () {
-       
+        console.log("F-loggedOut");
         $scope.changeRoute = true;
         dataService.loggoutWithReason('loggedOut');
     }
@@ -1748,7 +1795,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
             temp[i] = Math.abs(temp[i]);
         }
         $scope.arrangeType = temp;
-        $scope.selectAns($scope.arrangeType); 
+        $scope.selectAns($scope.arrangeType); //set the answer in our answer array.
         $scope.tempAns = $scope.arrangeType;
     }
 
@@ -1778,7 +1825,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }
 
     $scope.initLQJquery = function (quizMode){  
-          
+        console.log("F-initLQJquery");      
         if(quizMode=='review'){            
             if($('#arrOptions').length>0){
                 $("#arrOptions").sortable({
@@ -1830,13 +1877,14 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     
     }
 
-   
+    //check authentication in every 60 seconds
     $scope.verifyToken = function () {  
-         
+         console.log("F-verifyToken");      
         if (+dataService.getData('LOGGEDIN') == 1) {
             
             requestService.request('POST',true,'/verifyToken',{"userId": dataService.getData('USER'), "quizId": dataService.getData('QUIZID')}).then(function(response){                 
             var result = response.data;
+            $rootScope.consoleData(result,'/verifyToken-qc');   
             $rootScope.updateTime(result.time);
 
             if(!result.status){ 
@@ -1868,7 +1916,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     
 
     $scope.loadOtherMedia = function(){
-       
+        console.log("loadOtherMedia");
         $timeout(function () { dataService.getYtVideo(); }, 2000);
         $timeout(function () { dataService.getPlotChart();}, 2000);
         $timeout(function () { dataService.getPdfDoc();}, 2000);
@@ -1893,7 +1941,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
 
     const subjectExpire = 1000*60*60*24;
     $scope.loadSubjective = function(){
-       
+        console.log("loadSubjective");
        
         if($scope.filteredQuestions.type === 'sub' && $scope.quizMode == 'quiz'){
             $(".answerPreviewOverlay").css({'visibility':'visible'});
@@ -1909,7 +1957,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
             $scope.reloadCkEditor();
             $scope.showSubAddRow = true;
         }else{
-          
+            //review mode
         }
     }
 
@@ -1922,7 +1970,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
             
             CKEDITOR.replace('editor');
             $('#ckDiv').on('mouseover',function(){
-                
+                //check grammarly is installed
                 let ge = document.getElementsByTagName("grammarly-extension").length;
                 if(ge>0){
                     alert('Please disable grammarly extension of your browser.');
@@ -1933,7 +1981,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
             $scope.numCharacters = 0;
             CKEDITOR.on( 'instanceReady', function( evt ) {
                 evt.stop();
-                
+                 //-1 is number "-1" is string
                 if($scope.tempAns != -1){
                     if('text' in $scope.tempAns){
                         CKEDITOR.instances['editor'].setData($scope.tempAns['text']);
@@ -2009,7 +2057,10 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
         $scope.subNumDrawShapes = 0;
         $scope.subDBStatus = operation;
         $scope.delShape = false;
-       
+        // if(subDrawing){
+        //     subDrawing.teardown();
+        //     subDrawing=undefined;
+        // }
         $timeout(()=>{
             subDrawing = LC.init(
                 document.getElementById('subjevtiveDB'),{
@@ -2019,7 +2070,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
                 }
             );
          
-            $scope.subDBIndex =  index; 
+            $scope.subDBIndex =  index; //new = -1 edit = index
             if(operation == 'edit'){
                  let snapshot = $scope.tempAns['drawing'][index];
                  subDrawing.loadSnapshot(snapshot);
@@ -2153,11 +2204,11 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     }
 
 
-    
+    //step 1: Join room if it is available otherwise call continue in every 10 seconds
     $timeout(()=>{
         token = dataService.getData('TOKEN');
         socket.emit('std_lqJoinQuiz', {quizId,token,studentId}, function(res) {
-          
+            console.log('SE-std_lqJoinQuiz')
             $scope.$apply(function(){
                 if(res.status=='live'){  
                     startCounter = 0;                            
@@ -2178,7 +2229,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
                         
                     }else{
                         if(res.error){
-                            alert(res.error); 
+                            alert(res.error); //error
                         }
                     }
                     $scope.startVerifyAuthCounter();
@@ -2194,11 +2245,15 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
             });
            
         });
+
+        if($("#switchQuiz")){
+            $("#switchQuiz").trigger('mouseover');
+        }
     },500);
 
 
     $scope.terminateQuiz = function(reason,warning) {
-       
+        console.log("F-terminateQuiz");
         if (+dataService.getData('LOGGEDIN') == 1) {
             $scope.disableTimer(true);
             requestService.dbErrorHandler(reason,warning);
@@ -2209,7 +2264,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
 
     socket.on('std_lqWait',function(data){
         $scope.$apply(function(){
-          
+            console.log('SO-std_lqWait');
             $scope.disableTimer(true);     
             $scope.scrollUp();       
        });
@@ -2217,7 +2272,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
 
     socket.on('std_lqLeaveRoom',function(data){
         $scope.$apply(function(){
-           
+            console.log('SO-std_lqLeaveRoom');
             $scope.disableTimer(true);
             $scope.checkQuizIsLive(); 
             $scope.closeYoutubeBox();
@@ -2229,7 +2284,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     });
 
     socket.on('std_lqSessionExp',function(data){
-       
+        console.log("SO-std_lqSessionExp");
         $scope.$apply(function(){
             socketStatus = 'authFailed';  
            $scope.terminateQuiz('authFailed','danger');           
@@ -2238,7 +2293,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
 
     
     socket.on('lq_startTimer',function(data){
-      
+        console.log("SO-lq_startTimer");
         $scope.$apply(function(){
             $scope.quizState = data.type;
             $scope.startTime();
@@ -2247,7 +2302,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     });
 
     socket.on('std_lqQuestion',function(data){
-     
+       console.log("SO-std_lqQuestion");
        $scope.$apply(function(){
         $scope.disableTimer(true);
         $scope.time = data.meta.time;
@@ -2258,7 +2313,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
 
 
     socket.on('std_lqQuizInst',function(data){
-       
+        console.log("SO-std_lqQuizInst");
         $scope.$apply(function(){
             $scope.disableTimer(true);
             $scope.time = data.meta.time;
@@ -2270,7 +2325,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
 
 
     socket.on('std_lqSecInst',function(data){
-      
+        console.log('SO-std_lqSecInst');
         $scope.$apply(function(){
             $scope.disableTimer(true);
             $scope.time = data.meta.time;
@@ -2279,18 +2334,19 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     });
     
     socket.on('std_lqPauseQuiz',function(data){
-        
+        console.log('SO-std_lqPauseQuiz')
         $scope.$apply(function(){
             $scope.disableTimer(true);
             $scope.scrollUp(); 
         });
     });
 
-    
+    // new test  mode
     socket.on('std_lqPauseAndSubmit',function(data){
-       
+        console.log('SO-std_lqPauseAndSubmit');
         $scope.$apply(function(){
-                       
+            //if answer is given then do not send  
+            // answer response again            
             if(!$scope.isAnswerGiven){ 
                 $scope.pauseQuiz();
             }else{
@@ -2301,11 +2357,13 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     });
 
     socket.on('lq_updateTime',function(data){
-       
+        console.log('SO-lq_updateTime');
         $scope.$apply(function(){
           $scope.stopQuizClock(); 
 
-       
+        //   if($scope.isAnswerGiven){
+        //       return;
+        //   }
           $scope.time = data.newTime;
           $scope.startTime();
              
@@ -2315,15 +2373,16 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
 
     
     socket.on('std_lqDisplayStatsOnly',function(data){
-       
+        console.log("SO-std_lqDisplayStatsOnly");
         $scope.$apply(function(){
+            //statOnly;secId
             $scope.setUpStats(data,true);
         });
          
     })
 
     socket.on('std_lqRecieveDataAfterPlayed',function(data){
-       
+        console.log('SO-std_lqRecieveDataAfterPlayed');
         $scope.$apply(function(){
             $scope.disableTimer(true);
             $scope.setUpQuestionWithAns(data,false);
@@ -2335,9 +2394,9 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     
 
     socket.on('lq_stdShowData',function(data){
-       
+        console.log('SO-lq_stdShowData');
         $scope.$apply(function(){
-         
+           // console.log(data.type);
            $scope.quizState = data.type;           
         });
          
@@ -2346,7 +2405,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
   
 
     socket.on('std_toggleVideoChat',function(data){
-    
+       console.log("SO-std_toggleVideoChat");
       $scope.$apply(function(){
         $scope.setUpYoutubeBox(data);
       });
@@ -2362,7 +2421,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
     
 
     socket.on('disconnect',function(){
-       
+        console.log('SO-disconnect');
         $scope.$apply(function(){
             if (+dataService.getData('LOGGEDIN') == 1) {
                     if(socketStatus == 'disconnect'){
@@ -2371,6 +2430,7 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
                         helperService.notifyMsg('ti-alert', 'warning','You are disconnected from the live quiz.' , 'top', 'center',3000);
     
                         $scope.disableTimer(true);
+                        //$scope.checkQuizIsLive(); 
                         $scope.closeYoutubeBox();
                         $scope.closeWhiteBox();
                         if(authInterval){
@@ -2387,12 +2447,14 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
 
     
     socket.on('connect_error', function(err) {
+        console.log('connect_error');
         console.log(err);
+        //LiveQuizNotConnect - loggout reason
     })
 
     socket.on('connect',function(){
         $scope.$apply(function(){
-           
+            console.log("Connect successfully");
             socketStatus = 'disconnect';
             helperService.notifyMsg('ti-info', 'success','Now you are connected again.' , 'top', 'center',5000);
             if(startInterval){
@@ -2403,7 +2465,9 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
         });
     });
     
-   
+    /**end of socket***/
+
+ //////////end of live quiz///////////
 
     $scope.showUserDetail = function(prop){
       return dataService.isShowUserDetail(prop);
@@ -2417,22 +2481,25 @@ app.controller('liveQuizCtrl', ['$scope','$timeout', '$interval', '$compile','$r
       $(".pageLoader").fadeOut("slow");
     },1500);
 
-    
+    //it will call after when template load completely
     $scope.$on('$includeContentLoaded', function(event){
-       
+        console.log("Content Load");
         $scope.loadOtherMedia(); 
     });
 
     $scope.$on("lq_socketDisconnect", function(evt){ 
-       
+        console.log("lq_socketDisconnect");
         $timeout(function(){
             socket.disconnect();
         },500)
     });
 
+    $scope.checkLoginEmail = function(){
+        return ($scope.quizState =='notStart' || $scope.quizState =='offline' ) && sessionStorage.getItem('loginToken')?true:false;
+    }
+
 
 }]); 
-
 
 
 

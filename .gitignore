@@ -19,3 +19,5 @@ socketServer/services/configEnv.js
 liveQuizServer/services/configEnv.js
 
 .DS_Store
+frontend/favicon.ico
+frontend/scripts/favicon.ico

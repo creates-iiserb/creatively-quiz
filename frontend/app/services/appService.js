@@ -1,7 +1,7 @@
 ﻿'use strict';
-
+//utility services
 app.service('helperService', function () { 
- 
+    //////shuffle array for random questions///////
     this.shuffle = function (array) {
         var currentIndex = array.length, temp, randomIndex;
         while (0 !== currentIndex) {
@@ -15,7 +15,7 @@ app.service('helperService', function () {
         return array;
     }
 
-    
+    ////////merge object ////////
     this.extend = function (out) {
         out = out || {};
 
@@ -31,7 +31,7 @@ app.service('helperService', function () {
         return out;
     };
 
-   
+    ///////notify msg///////
     this.notifyMsg = function (icon, alert, msg, align1, align2,delayTimer=4000,offsety=null) {
         let options = {
             type: alert,
@@ -52,6 +52,7 @@ app.service('helperService', function () {
         },options);
     };
 
+    //remove after testing
     this.utcToLocal = function(date) {
         date = new Date(date);
         var newDate = new Date(date.getTime()+date.getTimezoneOffset()*60*1000);    
@@ -62,6 +63,7 @@ app.service('helperService', function () {
     };
 });
 
+//data related services --aamir
 app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout', function($cookieStore,$window,$http,$rootScope,$timeout){
     var service = this;
     service.toBool = function (val) {
@@ -72,16 +74,16 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
         else
             return val;
     };
- 
+    ///////get data/////////
     service.getData = function(name){
         return service.toBool($cookieStore.get(name));
     }
 
-    
+    ////////set data///////
     service.setData= function(name,val){
         $cookieStore.put(name, val);
     }
-   
+    ////////remove data/////////
     service.removeData = function(name){
         $cookieStore.remove(name);
     }
@@ -197,7 +199,11 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
     }
 
 
+
+    /////////clear all cookies and redirect to login -- in use
     service.clearAll = function(redirect){
+       // console.log('DataService clearAll, redirect-'+redirect);
+        console.log("clearAll");
         service.removeData('USER');
         service.removeData('ATTEMPT');
         service.setData('LOGGEDIN', 0);
@@ -208,25 +214,41 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
         service.removeData('ISSECTION');
         service.removeData('quizType');
         service.removeData('cookieSocketUrl');
+        service.removeData('QUESID');
+        service.removeData('GRADER_NAME'); 
+        service.removeData('GRADER_TOKEN'); 
         if(typeof(Storage) !== "undefined") {
             if (sessionStorage.language) {
                 sessionStorage.removeItem("language");
             }
+            
         }   
         
         if(redirect){
-            $window.location.href = window.location.origin + window.location.pathname;
+            if(sessionStorage.getItem('loginToken')){
+                window.location = window.location.origin + window.location.pathname+'#/quizList';
+                window.location.reload();
+            }else{
+                window.location = window.location.origin + window.location.pathname;
+            }
+            
         }
    
     }
 
+    ///////token send with each request -- in use
     service.webAuth = function(){
-     var webtoken = service.getData('QUIZID')+'###'+this.getData('USER')+'###'+this.getData('TOKEN');
-     webtoken = btoa(webtoken);
-     return webtoken;
+        const quizId = this.getData('QUIZID');
+        const user = this.getData('USER');
+        const token = this.getData('TOKEN');
+        let webtoken = null;
+        if(quizId && user && token){
+            webtoken = btoa(quizId+'###'+user+'###'+token);
+        }
+        return webtoken;
     }
 
-  
+    /////////load ploat chart////////// --in use
     service.getPlotChart = function(){
 
         $('body').on('click', '.zoomplot', function () {
@@ -246,7 +268,8 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
             let chartCaption = $(this).attr("data-caption");
             let obj = $(this);
             let divId = obj.attr("id");
-            
+            // obj.addClass("embed-responsive embed-responsive-4by3");
+            //plotIframeLink
             let htmltpm = `
             <div class='hidden-xs'>
              <div class='clear-fix'>
@@ -267,7 +290,7 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
         });
     }
     
- 
+    ////////load youtube video /////// --in use
     service.getYtVideo = function(){
 
         $('body').on('click', '.ytbReloadContentBtn', function (event) {
@@ -277,7 +300,7 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
             let dataSrc =  obj.attr("dataSrc");
             let indexId = obj.attr("data-id");
             let ele = $("#loadVideoDiv"+indexId);
-           
+            console.log(dataSrc);
 
             if(dataSrc == "success"){
                 let ytId = obj.attr("data-ytid");
@@ -302,7 +325,7 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
        
         if($(".ytbReloadContentBtnDiv").length>0){
             $(".ytbReloadContentBtnDiv").remove();
-            
+            console.log("ytbReloadContentBtnDiv");
         }
 
         $(".loadVideo").each(function (index) {
@@ -310,12 +333,12 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
             let datasrc = $(this).attr("data-vsource");
             let chartCaption = $(this).attr("data-caption");
             let obj = $(this);
-           
+            //Add caption and class
             obj.addClass("embed-responsive embed-responsive-16by9");
             obj.append("<p class='media-caption'>" + chartCaption + "</p>");
             obj.html('');
             if (dataUrl) {   
-                
+                // data url exists
                 let indexId = index;
                 let reqUrl = $rootScope.configData.youTubeUrl + dataUrl;
                 $http.get(reqUrl).then(function (response) {
@@ -324,14 +347,16 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
                         url = "https://www.youtube.com/embed/" + response.data.ytvid + "?autoplay=0&rel=0&iv_load_policy=3&showinfo=1&modestbranding=1&disablekb=1";
                         let temp = `<div id="loadVideoDiv${index}"><iframe src='${url}'  width=\"100%\" scrolling=\"no\" frameborder=\"0\" allowfullscreen=\"allowfullscreen\"> </iframe></div> `;
                         obj.html(temp);
-                        
+                        //let btn = `<div class="ytbReloadContentBtnDiv"><br><button  data-id="${index}" data-url="${reqUrl}" data-ytid="${response.data.ytvid}"    class="ytbReloadContentBtn btn btn-default btn-xs pull-right" type="button" title="Reload video, in case video is not display" dataSrc="success" ><i class="fa fa-refresh"></i> Reload</button><br><br></div>`;
+                        //$(btn).insertAfter(obj);
                     }
                    
                 },function(err){
                    console.log('potato not responding');
                    let temp = `<div id="loadVideoDiv${indexId}"></div> `;
                    obj.html(temp);
-                   
+                   //let btn = `<div class="ytbReloadContentBtnDiv"><br><button data-id="${indexId}" data-url="${reqUrl}" dataSrc="error"  class="ytbReloadContentBtn btn btn-default btn-xs pull-right" type="button" title="Reload video, in case video is not display" ><i class="fa fa-refresh"></i> Reload</button><br><br></div>`;
+                    //$(btn).insertAfter(obj);
 
                 });
             } else {
@@ -341,7 +366,8 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
                     url = "https://www.youtube.com/embed/" + dataid + "?autoplay=0&rel=0&iv_load_policy=3&showinfo=1&modestbranding=1&disablekb=1";
                     let temp = `<div id="loadVideoDiv${index}"><iframe src='${url}'  width=\"100%\" scrolling=\"no\" frameborder=\"0\" allowfullscreen=\"allowfullscreen\"> </iframe></div>`;
                     obj.html(temp);
-                    
+                    //let btn = `<div class="ytbReloadContentBtnDiv"><br><button data-id="${index}" data-ytid="${dataid}" dataSrc="success" title="Reload video, in case video is not display" class="ytbReloadContentBtn btn btn-default btn-xs pull-right" type="button"><i class="fa fa-refresh"></i> Reload</button> <br><br></div>`;
+                    //$(btn).insertAfter(obj);
                 }
                 
             }
@@ -349,6 +375,7 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
         });
     }
 
+    //////load pdf doc ///////--in use
     service.getPdfDoc = function(){
 
         $('body').on('click', '.pdfReloadContentBtn', function (event) {
@@ -362,7 +389,7 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
 
         if($(".pdfReloadContentBtnDiv").length>0){
             $(".pdfReloadContentBtnDiv").remove();
-            
+            console.log("pdfReloadContentBtnDiv");
         }
 
         $(".loadPDF").each(function (index) {
@@ -370,14 +397,15 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
             let chartCaption = $(this).attr("data-caption");
             let obj = $(this);
             obj.html('');
-            
+            //Add caption and class
             obj.addClass("embed-responsive embed-responsive-16by9");
             obj.append("<p class='media-caption'>" + chartCaption + "</p>");
             if (dataUrl) {
                 let url = $rootScope.configData.pdfDocUrl+dataUrl;
                 let temp = `<div id="loadPdfDocDiv${index}"><iframe src='${url}'  width=\"100%\" scrolling=\"no\" frameborder=\"0\" allowfullscreen=\"allowfullscreen\"> </iframe></div>`;
                 obj.html(temp);
-             
+                //let btn = `<div class="pdfReloadContentBtnDiv"><br><button data-id="${index}" data-url="${url}" class="pdfReloadContentBtn btn btn-default btn-xs pull-right" type="button" title="Reload PDF Document, in case PDF is not display"><i class="fa fa-refresh"></i> Reload</button><br><br></div>`;
+                //$(btn).insertAfter(obj);
             } 
 
         });
@@ -385,6 +413,8 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
 
  
 
+
+   //////////error swal with redirect /////--in use
     service.swalAndOut = function(msg,type,btntype){
         console.log("swalAndOut");
         this.clearAll(false);
@@ -408,9 +438,9 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
 
     }
 
-
+    //--in use
     service.swalAndRedirect = function(msg,type,btntype,exitReason){
-     
+        console.log("swalAndRedirect");
         if($(".pageLoader").length>0){
             $(".pageLoader").show();
         }
@@ -420,15 +450,13 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
         if(!uname){
             $window.location.href = window.location.origin + window.location.pathname; 
         }
-
-        var activeToken =  this.webAuth();
         var baseUrl = this.getData('cookieBaseUrl');
         var data = {
             uname:uname,
             quizId:quizId,
             message:exitReason
         }
-        var accessToken =  activeToken ? activeToken:null; 
+        var accessToken =  this.webAuth();
         let  reqByAuthor= this.getData('reqByAuthor');
         if (reqByAuthor){
             data.reqByAuthor = JSON.parse(reqByAuthor);
@@ -452,11 +480,13 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
         });
     }
 
+   //////////used when other window or console is open/////// --in use
     service.onFocusOut = function(flag){
        if(!flag)
        {
             $(window).on('blur', function () {
-             
+                //console.log("blue function")
+                // check focus
                 if ($('iframe').is(':focus')) {
                    console.warn('focus shifted to iframe');
                 }
@@ -488,15 +518,13 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
 
         service.removeData('ATTEMPT');
         service.setData('LOGGEDIN', 0);
-
-        var activeToken =  this.webAuth();
         var baseUrl = this.getData('cookieBaseUrl');
         var data = {
             uname:this.getData('USER'),
             quizId:this.getData('QUIZID'),
             message:reason
         }
-        var accessToken =  activeToken ? activeToken:null; 
+        var accessToken =  this.webAuth();
         let  reqByAuthor= this.getData('reqByAuthor');
         if (reqByAuthor){
             data.reqByAuthor = JSON.parse(reqByAuthor);
@@ -518,7 +546,7 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
         });
     }
 
-
+   ////////////check internet connection//////////
     service.checkInternet = function(){
         if(navigator.userAgent.indexOf("Chrome") != -1 || navigator.userAgent.indexOf("Firefox") != -1 || navigator.userAgent.indexOf("Safari") != -1)
         {            
@@ -582,30 +610,35 @@ app.service('dataService',['$cookies','$window','$http','$rootScope','$timeout',
 
 }])
 
-
+//--server request services
 app.service('requestService',['$http','$rootScope','dataService','helperService', function($http,$rootScope,dataService,helperService){
     this.request = function(method,withCredentials,api,data){
-        var activeToken =  dataService.webAuth();
         var baseUrl = dataService.getData('cookieBaseUrl');
-       
-        if(!data.hasOwnProperty('reqByAuthor')){
-            let  reqByAuthor= dataService.getData('reqByAuthor');
-            if (reqByAuthor){
-                data.reqByAuthor = JSON.parse(reqByAuthor);
-            }
-          
+        /////////new code //////
+        let  reqByAuthor= dataService.getData('reqByAuthor');
+        if (reqByAuthor){
+            data.reqByAuthor = JSON.parse(reqByAuthor);
         }
-
+        //when pass token always use Token suffix eg: graderToken 
+        let headers = {};
+        headers['authToken'] =  dataService.webAuth();//quiz Token
+        if(data.graderToken){
+            headers['authToken'] = data.graderToken; //grader Token
+            delete data.graderToken;
+            delete data.reqByAuthor;
+        }
+        if(data.loginToken){
+            headers['loginToken'] = data.loginToken;
+            delete data.loginToken;
+            delete data.reqByAuthor;
+        }
+        /////////end of new code /////
         
-      
-        var accessToken =  activeToken ? activeToken:null; 
           return $http({
                method:method,
                withCredentials:withCredentials,              
                url:baseUrl+api,
-               headers: {
-                'authToken': accessToken
-               },
+               headers: headers,
                data:data,
                timeout:15000
           });
@@ -613,7 +646,6 @@ app.service('requestService',['$http','$rootScope','dataService','helperService'
 
 
     this.download = function(method,withCredentials,api,data){
-        var activeToken =  dataService.webAuth();
         var baseUrl = dataService.getData('cookieBaseUrl');
         if(!data.hasOwnProperty('reqByAuthor')){
            
@@ -623,7 +655,7 @@ app.service('requestService',['$http','$rootScope','dataService','helperService'
              }
             
         }
-        var accessToken =  activeToken ? activeToken:null; 
+        var accessToken =  dataService.webAuth();
           return $http({
                method:method,
                withCredentials:withCredentials,              
@@ -636,7 +668,7 @@ app.service('requestService',['$http','$rootScope','dataService','helperService'
           });
     }
 
-
+    /////////////server error handler////////
     this.dbErrorHandler = function(errorCode,errorType){
         console.log('DB Warning');   
         console.log("ErrorCode-"+errorCode);
@@ -646,14 +678,14 @@ app.service('requestService',['$http','$rootScope','dataService','helperService'
             dataService.swalAndRedirect($rootScope.language[errorCode],'error','btn-danger','loggedOutSessionExpired');
         }   
         else{            
-         
+            //dataService.setData('LOGGEDIN', 0);
 
             helperService.notifyMsg('ti-alert', errorType, $rootScope.language[errorCode], 'top', 'center');
         }
     }
 }])
 
-
+//--custom filter
 app.filter('qTypeUpper', function() {
     return function(input) {
         if(input){
@@ -662,6 +694,9 @@ app.filter('qTypeUpper', function() {
             }else
             if(input == 'fillIn'){
                 return 'Fill in';
+            }else
+            if(input =='mcq'){
+               return 'MCQ';
             }else{
                 return (input.length > 0) ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : input;
             }
@@ -670,7 +705,15 @@ app.filter('qTypeUpper', function() {
   
 });
 
+// app.filter('findReplace', function() {
+//     return function(input,replaceWith) {
+//         if(input){
+//             return input.replace("###", replaceWith);
+//         }
+//     }
+// });
 
+//please use this  placeholder only ### @@@ &&& %%% in global language database; 
 app.filter("findReplace", ['$sce', function($sce) {
     return function(input,replaceWith) {
         if(input){
@@ -683,6 +726,20 @@ app.filter("findReplace", ['$sce', function($sce) {
     }
 }]);
 
+app.filter("plusminus",function(){
+    return function(inp){
+        inp = +inp;
+        if(inp>0){
+            inp = inp.toFixed(2);
+            return "+"+inp;
+        }else if(inp<0){
+            inp = inp.toFixed(2);
+            return inp;
+        }else if(inp ===0){
+            return "0.00";
+        }
+    }
+})
 
 app.filter("textTrim",function(){
 	return function (text,len) {
@@ -714,7 +771,7 @@ app.filter("toLocalTime",function(){
 });
 
 
-
+//return hh:mm:ss format
 app.filter("secondToString",function(){
     return function (given_seconds) {
         let hours = Math.floor(given_seconds / 3600);
@@ -724,7 +781,21 @@ app.filter("secondToString",function(){
         let timeString = hours.toString().padStart(2, '0') + ':' +
             minutes.toString().padStart(2, '0') + ':' +
             seconds.toString().padStart(2, '0');
-     
+        // console.log(timeString)
+        // return Math.round(difference_ms / one_minutes);
         return timeString
     }
 });
+
+
+app.filter("utcToLocal",function($filter){
+    return function (utcDateString, format) {
+        if (!utcDateString) {
+            return;
+        }
+        const timestamp = new Date(new Date(utcDateString).toString()).getTime();
+        return $filter('date')(timestamp, format);
+    };
+
+});
+

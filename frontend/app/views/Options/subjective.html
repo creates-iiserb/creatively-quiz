@@ -1,139 +1,148 @@
 <div id="qusBlock" class="card mtResp" >
 
-    <div class="card-content">
-      <div class="typo-line">
-        <span class="quesQ">Q.</span>  <span subjectmath="{{filteredQuestions[0].object.question}}"  ng-show="filteredQuestions[0].object.question!==''"></span>
+  <div class="card-content">
+    <div class="typo-line">
+      <span class="quesQ">Q.</span>  <span subjectmath="{{filteredQuestions[0].object.question}}"  ng-show="filteredQuestions[0].object.question!==''"></span>
+     </div>
+
+      <h5 class="text-info mrB0px marT10px bold" >
+        {{ lock[currentPage - 1] ? lang.caption_your_ans : lang.caption_ansPreview}}
+      </h5>
+
+      <div   ng-show="tempAns[currentPage - 1] != -1 && filteredQuestions[0].object.limit>0 && tempAns[currentPage - 1]['text']" >
+        <div class="help-content answerPreviewOverlay {{ !rsgetData('ATTEMPT') && !lock[currentPage - 1] ?'scrollSub':'' }}" >
+          <span   subjectmath="{{tempAns[currentPage - 1]['text'] }}"></span>
+        </div>
+      </div>
+  
+    <div  ng-show="!rsgetData('ATTEMPT') && !lock[currentPage - 1] && filteredQuestions[0].object.limit>0">
+      <div class="row mT5px">
+        <div class="col-md-10 pad0px">
+          <!-- <strong class="text-warning"><i class="fa fa-info-circle"></i> {{ lang.msg_characterLimit | findReplace:filteredQuestions[0].object.limit
+          }} </strong> -->
+          <strong class="text-warning"><i class="fa fa-info-circle"></i> {{ lang.msg_characterLimit | findReplace: { '###':filteredQuestions[0].object.limit }
+          }} </strong>
+        </div>
+
+       
+        <div class="col-md-2 text-right pad0px">
+              <!-- <button class="btn btn-xs btn-fill btn-default" tooltip-placement="left" uib-tooltip="{{lang.msg_editor_reload}}" ng-click="reloadCkEditor()" title="Reload editor">
+                <i class="fa fa-refresh"></i>
+              </button> -->
+              <button class="btn btn-xs btn-fill btn-default" tooltip-placement="left" uib-tooltip="Click here if you don't see the editor" ng-click="reloadCkEditor()" title="Reload editor">
+                <i class="fa fa-refresh"></i>
+              </button>
+
+        </div>
+
+      </div>
+      
+
+      <div id="ckDiv" class="marT10px" style="min-height: 180px;position: relative;">
+          <div class="divOverLay"></div>
+          <div>
+            <textarea id="editor" data-gramm_editor="false"></textarea>
+          </div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-6 pad0px">
+          <button class="pad0px btn-link bold text-info" ng-click="openMathDoc()">
+            {{lang.msg_math_help}}
+          </button>
        </div>
-        <h5 class="text-info mrB0px marT10px bold" ng-show="{{!rsgetData('ATTEMPT')}}">
-         {{ lock[currentPage - 1] ?lang.caption_your_ans :lang.caption_ansPreview}}
-        </h5>
-
-        <h5 class="text-info mrB0px marT10px bold" ng-show="{{rsgetData('ATTEMPT')}}">
-          {{ lock[currentPage - 1] ? lang.caption_your_ans : lang.caption_ansPreview}}
-        </h5>
-
-        <div   ng-show="tempAns[currentPage - 1] != -1 && filteredQuestions[0].object.limit>0" >
-          <div class="help-content answerPreviewOverlay {{ !rsgetData('ATTEMPT') && !lock[currentPage - 1] ?'scrollSub':'' }}" >
-            <span   subjectmath="{{tempAns[currentPage - 1]['text'] }}"></span>
-          </div>
-        </div>
-    
-      <div  ng-show="!rsgetData('ATTEMPT') && !lock[currentPage - 1] && filteredQuestions[0].object.limit>0">
-        <div class="row mT5px">
-          <div class="col-md-10 pad0px">
-           
-            <strong class="text-warning"><i class="fa fa-info-circle"></i> {{ lang.msg_characterLimit | findReplace: { '###':filteredQuestions[0].object.limit }
-            }} </strong>
-          </div>
-
-          <div class="col-md-2 text-right pad0px">
-                <button class="btn btn-xs btn-fill btn-default" ng-click="reloadCkEditor()" title="Reload editor">
-                  <i class="fa fa-refresh"></i>
-                </button>
-          </div>
+        <div class="col-sm-6 pad0px">
+          <span class="pull-right" >
+            {{ lang.msg_charCount }} 
+            <strong class="{{ subNumCharacters > filteredQuestions[0].object.limit? 'text-danger':'' }}">{{ subNumCharacters }} </strong> / <strong class="qBold"> {{filteredQuestions[0].object.limit}} </strong>
+          </span>
 
         </div>
-        
-  
-        <div id="ckDiv" class="marT10px" style="min-height: 180px;position: relative;">
-            <div class="divOverLay"></div>
-            <div>
-              <textarea id="editor" data-gramm_editor="false"></textarea>
-            </div>
-        </div>
 
-        <div class="row">
-          <div class="col-sm-6 pad0px">
-            <button class="pad0px btn-link bold text-info" ng-click="openMathDoc()">
-              {{lang.msg_math_help}}
-            </button>
-         </div>
-          <div class="col-sm-6 pad0px">
-            <span class="pull-right" >
-              {{ lang.msg_charCount }} 
-              <strong class="{{ subNumCharacters > filteredQuestions[0].object.limit? 'text-danger':'' }}">{{ subNumCharacters }} </strong> / <strong class="qBold"> {{filteredQuestions[0].object.limit}} </strong>
-            </span>
-  
-          </div>
-  
-        </div>
-          <br>
       </div>
+        <br>
+    </div>
 
-      <div ng-show="showAddSubDrawBtn()">
-          <div class="row marB10px">
-             <div class="col-md-6 pad0px">
-              <strong>
-                <span class="text-warning">
-                  <strong class="text-warning"><i class="fa fa-info-circle"></i> {{lang.msg_max}} {{ filteredQuestions[0].object.allowedDrawings }} {{lang.msg_drawing}}
-                </span> 
-              </strong> 
-             </div>
-
-             <div class="col-md-6 text-right pad0px" >
-                <button
-                ng-show="subDBStatus == 'none'"
-                class="btn btn-xs btn-default"
-                ng-click="showSubDB('add')">
-                 <i class="fa fa-plus"></i> &nbsp; <i class="fa fa-paint-brush"></i>
-                </button>
-             </div>
-          </div>
-          
-      </div>
-
-      <div ng-show="filteredQuestions[0].object.allowedDrawings>0 && tempAns[currentPage - 1]['drawing'].length>0" >
+    <div ng-show="showAddSubDrawBtn()">
         <div class="row marB10px">
-           <div class="col-md-4 padLft0px" ng-repeat="draw in tempAns[currentPage - 1]['drawing']">
-              <div class="subImgItem">
-                <div class="pull-right marB10px" ng-show="!lock[currentPage - 1] && !rsgetData('ATTEMPT')">
-                  <button class="text-primary xsiconBtn" ng-click="showSubDB('edit',$index)">
-                    <i class="fa fa-pencil-square-o"></i>
-                  </button>
+           <div class="col-md-6 pad0px">
+            <strong>
+              <span class="text-warning">
+                <strong class="text-warning"><i class="fa fa-info-circle"></i> {{lang.msg_max}} {{ filteredQuestions[0].object.allowedDrawings }} {{lang.msg_drawing}}
+              </span> 
+            </strong> 
+           </div>
 
-                  <button class="text-danger xsiconBtn" ng-click="delSubDB($index)">
-                    <i class="fa fa-trash-o"></i>
-                  </button>
-                </div>
-               
-                  <div ng-bind-html="getSubSvgImg(draw)"  ></div>
-                  
-              </div>
-              
+           <div class="col-md-6 text-right pad0px" >
+              <button
+              ng-show="subDBStatus == 'none'"
+              class="btn btn-xs btn-default"
+              ng-click="showSubDB('add')">
+               <i class="fa fa-plus"></i> &nbsp; <i class="fa fa-paint-brush"></i>
+              </button>
            </div>
         </div>
-      </div>
+        
+    </div>
 
-      <div ng-if="!rsgetData('ATTEMPT') && !lock[currentPage - 1] && filteredQuestions[0].object.allowedDrawings>0 && (subDBStatus == 'add' || subDBStatus =='edit')">
-          <div id="subjevtiveDB" class="loadWB" ></div>
-
-          <div class="row drawingBtnRow">
-            <div class="col-md-6  pad0px">
-               <button ng-click="delSelectedShape()" class="drawingBtn" ng-show="delShape">
-                   <i class="fa fa-trash"></i>
+    <div ng-show="filteredQuestions[0].object.allowedDrawings>0 && tempAns[currentPage - 1] != -1 && tempAns[currentPage - 1]['drawing'] && tempAns[currentPage - 1]['drawing'].length>0" >
+      <div class="row marB10px">
+         <div class="col-md-4 padLft0px" ng-repeat="draw in tempAns[currentPage - 1]['drawing']">
+            <div class="subImgItem">
+              <div class="pull-right marB10px" ng-show="!lock[currentPage - 1] && !rsgetData('ATTEMPT')">
+                <button class="text-primary xsiconBtn" ng-click="showSubDB('edit',$index)">
+                  <i class="fa fa-pencil-square-o"></i>
                 </button>
-            </div>
-            <div class="col-md-6 text-right padLR0px">
-              <button 
-                ng-click="updateSubDrawing()"
-                class="btn btn-xs btn-success btn-fill">
-                <i class="fa fa-check"></i> 
-                {{ subDBStatus == 'add' ? lang.caption_add : lang.caption_update }}
-              </button>
 
-              <button
-              ng-click="cancelSubDrawing()"
-              class="btn btn-xs btn-danger btn-fill">
-               <i class="fa fa-times"></i>
-                 {{ lang.caption_cancel }}
-              </button>
-                &nbsp;
-                (<span class="{{ subNumDrawShapes>maxShapeAllowed?'text-danger bold':''}}">{{ subNumDrawShapes }}</span>/{{ maxShapeAllowed }})
+                <button class="text-danger xsiconBtn" ng-click="delSubDB($index)">
+                  <i class="fa fa-trash-o"></i>
+                </button>
+              </div>
+              <!-- <img ng-src="{{ draw|snapToSvg }}" class="img-responsive" > -->
+                <div ng-bind-html="getSubSvgImg(draw)"  ></div>
+                <!-- <img ng-src="getSubSvgImg(draw)" class="img-responsive" > -->
             </div>
-          </div>
-
+            
+         </div>
       </div>
-       
+    </div>
+
+    <div ng-if="!rsgetData('ATTEMPT') && !lock[currentPage - 1] && filteredQuestions[0].object.allowedDrawings>0 && (subDBStatus == 'add' || subDBStatus =='edit')">
+      <strong class="text-warning marB10px" style="display: inline-block;">
+        <i class="fa fa-info-circle"></i>
+         <!-- {{lang.msg_drawing_add_edit_btn}} -->
+         After completing the drawing, don't forget to click Add or  Update button.
+      </strong>
+
+        <div id="subjevtiveDB" class="loadWB" ></div>
+
+        <div class="row drawingBtnRow">
+          <div class="col-md-6  pad0px">
+             <button ng-click="delSelectedShape()" class="drawingBtn" ng-show="delShape">
+                 <i class="fa fa-trash"></i>
+              </button>
+          </div>
+          <div class="col-md-6 text-right padLR0px">
+            <button 
+              ng-click="updateSubDrawing()"
+              class="btn btn-xs btn-success btn-fill">
+              <i class="fa fa-check"></i> 
+              {{ subDBStatus == 'add' ? lang.caption_add : lang.caption_update }}
+            </button>
+
+            <button
+            ng-click="cancelSubDrawing()"
+            class="btn btn-xs btn-danger btn-fill">
+             <i class="fa fa-times"></i>
+               {{ lang.caption_cancel }}
+            </button>
+              &nbsp;
+              (<span class="{{ subNumDrawShapes>maxShapeAllowed?'text-danger bold':''}}">{{ subNumDrawShapes }}</span>/{{ maxShapeAllowed }})
+          </div>
+        </div>
+
     </div>
   
+  </div>
+
 </div>

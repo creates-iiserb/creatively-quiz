@@ -1,0 +1,502 @@
+<style>
+  /* Hide scrollbar for IE and Edge */
+  * {
+    -ms-overflow-style: none !important;
+    -ms-overflow-style: none; /* IE 10+ */
+  }
+</style>
+
+<div class="pageLoader"></div>
+<div class="fetchLoader">
+  <div class='uil-ring-css' style='transform:scale(0.79);'>
+    <div></div>
+  </div>
+  <!-- <div class="fetchTitle">Fetching Question...</div> -->
+</div>
+
+<div class="errorBox" ng-if="isError" >
+   <div class="card errorCard card-lock" >
+    <div class="card-header">
+      <h3 class="card-title">{{ lang.caption_examineer }}</h3>
+    </div>
+      <p>{{  errorMsg }}</p>
+   </div>
+</div>
+
+
+<!-- start here -->
+<div class="wrapper" ng-if="isLoad && !isError" >
+  <div class="sidebar custsidebar" data-background-color="white"
+    data-active-color="danger">
+    <div class="logo" style="background-color: #66615b;height: 60px;">
+      <div class="d-flex d-justify-space-between d-flex-row d-align-item-center w-100 px-10">
+        <div class="brandTitle">{{ lang.caption_examineer }}</div>
+        <div class="d-flex d-flex-row d-align-item-center" style="justify-content: flex-end;">
+          
+          <i class="fa fa-lightbulb-o text-warning ml-5px" ng-show="activeQues.response.helpUsed==1"  title="Hint used"></i>
+          <i class="fa fa-book text-success ml-5px" title="Hint and explanation used"  ng-show="activeQues.response.helpUsed==2"></i> 
+          <i class="fa fa-info-circle ml-5px cur-pointer"  title="Quiz Info" ng-click="openQuizInfo()"></i>
+        </div>
+      </div>
+      <div class="d-flex d-align-item-center d-justify-space-between d-flex-row fs-12px w-100 px-10">
+        <div class="bold">{{ quizId }} - {{ questionRef}} </div>
+        <div class="bold">{{graderName | textTrim:15 }}</div>
+      </div>
+    </div>
+
+    <div class="sidebar-wrapper">
+      <!-- Content for grading -->
+      <div ng-class="{ divBlur: !divStatus() }" > 
+        <div class="divOverlay" ng-if="!divStatus()"></div>
+        <div class="card leftCard">
+          <div class="gradeContinerBtns">
+            <button class="btn btn-xs btn-success btnSucc corrIncorrBtn {{selectAnsOption ==0 && 'btn-fill' }}" ng-disabled="isFinalize" ng-click="changeAnsStatus(0)"><span class="btnLbl">{{ maximumScore }}</span>
+               <!-- <span class="gradBtnLbl">(Mostly) Correct</span>  -->
+            </button>
+              <button class="btn btn-xs btn-info btnDan corrIncorrBtn {{selectAnsOption ==2 && 'btn-fill' }}" ng-disabled="isFinalize" ng-click="changeAnsStatus(2)"><span class="btnLbl">0</span> 
+                <!-- <span class="gradBtnLbl"> (Mostly) Incorrect</span>  -->
+               </button>
+          </div>
+
+          <div class="gradeContinerBtns padT0px {{ !activeQues.rubricSetting.adjEnabled?'singleGrid':'' }}" >
+            <div class="gradeLabelBoxContainer" ng-if="activeQues.rubricSetting.adjEnabled">
+              <input type="number" ng-disabled="selectAnsOption===-1 || isFinalize" class="adjumentInput" ng-keyup="minMaxCheck()"  ng-model="sc.adjustment"  />
+              <span >Adjustment</span>
+            </div>
+
+            <div class="gradeLabelBoxContainer">
+              <div class="scoreBox">{{ scoreAfterAdjustment() }}</div>
+              <span >Score</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-100 px-10" style="max-height:320px; overflow-y:scroll ;" ng-if="activeQues.rubricSetting.rules.length>0 || activeQues.rubricSetting.editable" id="rubricsDiv">
+          <table class="table rubTbl">
+            <tr ng-repeat="rub in activeQues.rubricSetting.rules track by $index" ng-include="getTemplate(rub)">
+            </tr>
+          </table>
+
+          <script type="text/ng-template" id="rubricDisplay">
+            <td class="rubMarkTd"><button class="btn btn-sm rubMarkBtn {{ rub.value>=0?'incPostiveNotSelect':'incNegativeNotSelect' }} {{ (rub.selected && rub.value>=0)?'incPostive':'' }} {{ (rub.selected && rub.value<0)?'incNegative':'' }}" ng-click="toggleMarks(rub.id)">{{rub.value>0?'+'+(+rub.value):rub.value }}</button></td>
+            <td>
+              <span subjectmath="{{rub.text}}"  ng-show="rub.text!==''"></span>
+            </td>
+            <td style="width:30px" ng-if="activeQues.rubricSetting.editable"><i class="fa fa-pencil cur-pointer" ng-click="editRubric(rub)" title="Edit"></i> <i class="fa fa-trash-o cur-pointer" title="Delete" ng-click="delRubric(rub)"></i></td>
+          </script>
+
+          <script type="text/ng-template" id="rubricEdit">
+            <td style="width: 42px;padding-right:2px"><input type="text"  placeholder="score"  maxlength="6" class="w-100 fs-10px text-center"   ng-model="selected.value"  /></td>
+              <td style="width: auto;padding-right:5px;"><input type="text" maxlength="350" ng-model="selected.text" placeholder="Add rule" class="w-100 fs-10px" name="title" /></td>
+              <td style="width: 30px;" > <i class="fa fa-check cur-pointer" title="Update"  ng-click="updateRubric(selected)"></i> <i class="fa fa-times cur-pointer" title="Cancel" ng-click="cancelRubric()"></i></td>
+          </script>
+
+        </div>
+        <div class="w-100 px-10" ng-if="activeQues.rubricSetting.editable">
+          <table class="table rubTbl">
+            <tr ng-if="addRubric">
+              <td style="width: 42px;padding-right:2px"><input type="text" ng-model="newRub.value" maxlength="6"  placeholder="score"   class="w-100 fs-10px text-center"  /></td>
+              <td style="width: auto;padding-right:5px;"><input type="text" maxlength="350" ng-model="newRub.text" placeholder="Add rule" class="w-100 fs-10px" name="title" /></td>
+              <td style="width: 30px;"><i class="fa fa-floppy-o cur-pointer" title="Save" ng-click="saveRubric()"></i>  <i class="fa fa-times cur-pointer" title="Cancel" ng-click="toggleAddRubric(false)"></i></td>
+            </tr>
+            <tr ng-if="!addRubric">
+              <td class="rubMarkTd">
+                <button class="btn btn-sm btn-info rubMarkBtn btn-fill" ng-click="toggleAddRubric(true)"><i class="fa fa-plus"></i></button>
+              </td>
+              <td>
+                Add New Rule
+              </td>
+            </tr>
+          </table>
+          
+
+          
+        </div>
+        
+         <div class="gradeNoteContainer" style="margin-top: 5px;">
+           <textarea class="form-control gradeNote" ng-disabled="selectAnsOption===-1 || isFinalize"  rows="2" ng-model="sc.note" id="note" placeholder="Remarks"></textarea>
+         </div>
+         
+      </div>
+      
+        <div class="text-center">
+          <div class="d-flex d-justify-content-center d-flex-row d-align-item-center">
+            <div class="btn-group btn-group-md btnGrp">
+              <!-- pre -->
+              <button type="button" ng-click="prev()"
+              ng-disabled="history.length==0 || selectedQusIndex==0" class="btn btn-primary  btn-fill padTB0px"> <i class="fa fa-chevron-left"></i> </button>
+              <button type="button" style="flex:1;" ng-if="!allGraded || showQuestion"  ng-disabled="selectAnsOption==-1 || isFinalize" ng-click="grade()" class="btn btn-primary  btn-fill padTB0px"><i class="fa fa-floppy-o"></i> {{ activeQues.graded?'Update':'Save'  }}</button>
+              <button type="button" ng-click="next()"
+              ng-disabled="history.length==0 || ((selectedQusIndex)==(history.length))" class="btn btn-primary btn-fill padTB0px"><i class="fa fa-chevron-right"></i></button>
+            </div>
+
+            
+            <div style="position: relative;" ng-if="history.length>0" title="Graded Questions List">
+              <span class="badge gradedNum label-primary">{{ history.length }}</span>
+              <i class="fa fa-th-list gradedQIcon" data-toggle="modal" data-target="#gradedQuestionMdl"></i>
+            </div>
+            
+          </div>
+           
+           <span ng-if="history.length >0 && activeQues.graded">{{ selectedQusIndex+1 }} / {{ history.length }}</span>
+        </div>
+      </div>
+    </div>
+    
+    
+  <div class="main-panel autoHeight">
+    <div class="content quiz-content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-xs-12 col-md-10 col-md-offset-1">
+            <div class="mobileMenu">
+              <button type="button" class="menuBtnToggler" ng-click="navBarHandler()">
+                <i class="fa fa-bars"></i>
+              </button>
+            </div>
+           
+            <!-- subjective content -->
+            <div id="qusBlock" class="card mtResp" ng-if="!allGraded || showQuestion">
+              <div class="card-content">
+                 <div class="lastUpdateRow" ng-if="activeQues.graded">
+                  <span><b>Last Update:</b> {{ lastGradedTime |
+                    utcToLocal:'MMM dd, yyyy hh:mm a' }} </span>
+                    <span class="label label-warning">Graded</span>
+                 </div>
+                
+                 <div class="typo-line">
+                  <span class="quesQ">Q.</span>  <span subjectmath="{{activeQues.question.object.question}}"  ng-show="activeQues.question.object.question!==''"></span>
+                 </div>
+              </div>
+            </div>
+            <!-- end of subjective content -->
+          </div>
+        </div>
+
+        <div id="quiz-info" class="row" ng-if="!allGraded || showQuestion">
+          <!-- Answer -->
+          <div
+            class="col-md-12 col-md-10 col-md-offset-1"
+          >
+            <div class="card">
+              <div class="card-header">
+                <div class="clear-fix">
+                    <h4 class="card-title bold" style="color:#68B3C8">
+                      Participant’s Answer
+                    </h4>
+                </div>
+              </div>
+
+              <div class="card-content padT10px">
+                 <hr>
+                 <div ng-show="activeQues.response.tempAns != -1 && activeQues.question.object.limit>0 && activeQues.response.tempAns['text']" >
+                  <div class="help-content marT10px" >
+                    <span class="stdAns" ng-if="activeQues.response.tempAns['text'] !==''" subjectmath="{{activeQues.response.tempAns['text'] }}"></span>
+                    <strong ng-if="activeQues.response.tempAns['text']===''">
+                       No answer is given
+                    </strong>
+                  </div>
+                </div>
+          
+                <div ng-show="activeQues.question.object.allowedDrawings>0 && activeQues.response.tempAns != -1 && activeQues.response.tempAns['drawing'] && activeQues.response.tempAns['drawing'].length>0" >
+                    <div class="row marB10px">
+                    <div class="col-md-4 padLft0px" ng-repeat="draw in activeQues.response.tempAns['drawing']">
+                        <div class="subImgItem">
+                            <!-- <img ng-src="{{ draw|snapToSvg }}" class="img-responsive" > -->
+                            <div ng-bind-html="getSubSvgImg(draw)"  ></div>
+                            <!-- <img ng-src="getSubSvgImg(draw)" class="img-responsive" > -->
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="quiz-info" class="row" ng-if="!allGraded || showQuestion">
+          <!-- Answer -->
+          <div
+            id="quiz-ans"
+            class="col-md-12 col-md-10 col-md-offset-1"
+          >
+            <div class="card">
+              <div class="card-header">
+                <div class="clear-fix">
+                    <h4 class="card-title bold" style="color:#68B3C8">
+                      Suggested Answer
+                    </h4>
+                </div>
+              </div>
+
+              <div class="card-content padT10px">
+                 <hr>
+                <div class="help-content ansContent marT10px">
+
+                  <div>
+                    <span ng-if="activeQues.answer.correctAns !=''"
+                      math="{{activeQues.answer.correctAns}}"
+                    ></span>
+
+                    <span ng-if="activeQues.answer.correctAns ==''">
+                      {{lang.caption_nav }}
+                    </span>
+                  </div>
+
+                   <div ng-show="activeQues.response.helpUsed>=1">
+                    <h3 class="text-info cardSubTitle" >
+                      {{lang.caption_hint}}
+                    </h3>
+  
+                    <p>
+                      <span math="{{activeQues.question.object.hint}}"></span>
+                    </p>
+                   </div>
+                  
+                   <div ng-show="activeQues.response.helpUsed==2">
+                  <h3 class="text-info cardSubTitle" >
+                    {{lang.caption_explanation}}
+                  </h3>
+
+                  <p> 
+                    <span math="{{activeQues.question.object.explanation}}"></span>
+                  </p>
+                  </div>
+                    
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- add more card here -->
+        <!-- all question graded -->
+
+       
+
+        <div class="card text-center" ng-if="!divStatus()">
+          <img ng-src="assets/img/quesDone.gif" style="height: 100px;
+          width: 100px;" alt="">
+          <h5 class="bold">{{ errorMsg }}</h5>
+          <p ng-if="history.length>0 && !isFinalize">If you want to regrade the previously graded questions use the arrow button.</p>
+          <br>
+        </div>
+        
+        <!-- end of all graded -->
+
+      </div>
+    </div>
+  </div>
+</div>
+<!-- end of wrapper class -->
+<!-- End here -->
+
+
+
+<!-- math doc model -->
+<div class="modal fade" id="mathDocMdl" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">
+          &times;
+        </button>
+        <h4 class="modal-title">{{ lang.msg_math_help }}</h4>
+      </div>
+      <div class="modal-body">
+        <iframe
+          src="https://examineer.in/docs/mathHelp.html"
+          height="450px"
+          width="100%"
+          title="Math Documentation"
+        ></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- end of math doc model -->
+
+<!-- instuction Model -->
+<div class="modal fade" id="secInstuction" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">
+          &times;
+        </button>
+        <h4 class="modal-title">{{lang.caption_instruction}}</h4>
+      </div>
+      <div class="modal-body">
+        <h3 class="text-center quiz-head">{{ quizInfo.title }}</h3>
+        <div class="text-center">
+          <span class="label label-success"
+            >{{ lang.caption_quizid }} - {{ quizInfo.quizid }}</span
+          >
+        </div>
+        <span math="{{quizInfo.instruction}}"></span>
+        <div>
+          <br />
+          <h4 class="card-title marT5px">
+            <strong> {{ activeSection.secTitle }}</strong>
+            <hr />
+          </h4>
+          <span math="{{activeSection.instruction}}"></span>
+        </div>
+        <h4 class="card-title">
+          <strong>{{ lang.caption_timing }}</strong>
+          <hr />
+        </h4>
+        <ul>
+          <li>
+            <p><b>{{lang.caption_quizOpenedAt}}</b> {{quizInfo.beginTime}}</p>
+          </li>
+          <li>
+            <p><b>{{lang.caption_deadline}}:</b> {{quizInfo.endTime}}</p>
+          </li>
+          <li>
+            <p>
+              <b>{{lang.caption_duration}}:</b> {{+quizInfo.duration==525600?
+              lang.caption_na : +quizInfo.duration + lang.caption_min }}
+            </p>
+          </li>
+
+          <li ng-if="sectData.partialGrading">
+            <p class="bold text-warning">
+              {{ sections.length == 1 ? lang.caption_partialInstrQuiz :
+              lang.caption_partialInstrSec }}
+            </p>
+          </li>
+        </ul>
+
+        <h4 class="card-title">
+          <strong>{{lang.caption_gradingScheme}}</strong>
+          <hr />
+        </h4>
+
+        <p>{{lang.msg_gradingScheme}} :</p>
+        <center>
+          <div class="table-responsive">
+            <table class="table table-center grade-table">
+              <tr>
+                <th width="160"></th>
+                <th class="no-help-used" align="center">
+                  &nbsp;{{lang.caption_noHelpUsed}}&nbsp;
+                 
+                </th>
+                <th
+                  class="hint-used"
+                  align="center"
+                  ng-show="activeSection.helpAllowed<=2 && activeSection.helpAllowed>0"
+                >
+                  &nbsp;{{lang.caption_hintUsed}}&nbsp;
+                </th>
+                <th
+                  class="explanation-used"
+                  align="center"
+                  ng-show="activeSection.helpAllowed==2"
+                >
+                  &nbsp;{{lang.caption_expUsed}}&nbsp;
+                </th>
+              </tr>
+              <tr>
+                <td align="center">
+                  <b> {{lang.caption_correctAns}} </b>
+                </td>
+
+                <td class="no-help-used">{{activeSection.gradingMatrix[0][0] }}</td>
+                <td
+                  class="hint-used"
+                  ng-show="activeSection.helpAllowed<=2&&activeSection.helpAllowed>0"
+                >
+                  {{activeSection.gradingMatrix[0][1]}}
+                </td>
+                <td
+                  class="explanation-used"
+                  ng-show="activeSection.helpAllowed==2"
+                >
+                  {{activeSection.gradingMatrix[0][2]}}
+                </td>
+              </tr>
+              <tr>
+                <td align="center">
+                  <b> {{lang.caption_skippedQus}} </b>
+                </td>
+                <td class="no-help-used">{{activeSection.gradingMatrix[1][0]}}</td>
+                <td
+                  class="hint-used"
+                  ng-show="activeSection.helpAllowed<=2 && activeSection.helpAllowed>0"
+                >
+                  {{activeSection.gradingMatrix[1][1]}}
+                </td>
+                <td
+                  class="explanation-used"
+                  ng-show="activeSection.helpAllowed==2"
+                >
+                  {{activeSection.gradingMatrix[1][2]}}
+                </td>
+                <!-- <td ng-repeat="grd in grdSkippedAns">{{grd}}</td> -->
+              </tr>
+              <tr>
+                <td align="center">
+                  <b> {{lang.caption_incorrectAns}} </b>
+                </td>
+                <td class="no-help-used">{{activeSection.gradingMatrix[2][0]}}</td>
+                <td
+                  class="hint-used"
+                  ng-show="activeSection.helpAllowed<=2 && activeSection.helpAllowed>0"
+                >
+                  {{activeSection.gradingMatrix[2][1]}}
+                </td>
+                <td
+                  class="explanation-used"
+                  ng-show="activeSection.helpAllowed==2"
+                >
+                  {{activeSection.gradingMatrix[2][2]}}
+                </td>
+                <!-- <td ng-repeat="grd in grdWrongAns">{{grd}}</td> -->
+              </tr>
+            </table>
+          </div>
+        </center>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- end of instruction Model -->
+
+<div class="modal fade" id="gradedQuestionMdl" role="dialog">
+  <div class="modal-dialog modal-sm gradedQuestionMdl">
+    <div class="modal-content">
+      <div class="modal-header" style="padding:5px 15px">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h5 class="modal-title">Graded Questions</h5>
+      </div>
+      <!-- <div class="modal-body  padLR0px"> 
+         <div class="chip {{ $index===selectedQusIndex?'activeChip':'' }}" ng-repeat="q in history" ng-click="goTo($index)">
+          <div class="chip-head">{{ $index+1 }}</div>
+          <div class="chip-content">{{ q.score }}</div> 
+        </div> -->
+        <div class="modal-body">
+          <button style="margin:5px;width:30px;height:30px;border-radius:50%;" class="btn btn-xs btn-primary" ng-repeat="q in history" ng-click="goTo($index)">
+            {{ $index+1 }}
+          </button>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<div id="overlay">
+  <div class="clear-fix">
+    <div class="pull-right">
+      &nbsp;
+      <button class="btn btn-fill btn-primary btn-sm" id="closeOverlay">
+        <i class="fa fa-close"></i> {{ lang.caption_cancel }}
+      </button>
+    </div>
+  </div>
+  <iframe frameborder="0" id="overlayIframe"></iframe>
+</div>
+<script src="assets/js/paper-dashboard.js"></script>

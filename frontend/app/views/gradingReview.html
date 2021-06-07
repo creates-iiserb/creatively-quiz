@@ -1,0 +1,55 @@
+<button
+  type="button"
+  class="btn btn-sm btn-warning btn-fill"
+  ng-if="reqBy=='auth'"
+  ng-click="openTicketInput('authFeedback','open')"
+>
+  <i class="fa fa-user-o"></i> {{ (feedback[currentPage-1].hasFeedback &&
+  feedback[currentPage-1].text !=='')?'Edit Feedback': 'Feedback' }}
+</button>
+
+<div class="gradeReview mrT20">
+  <!-- add feedback -->
+  <div
+    id="authorAddFeedback"
+    ng-if="reqBy=='auth' && feedback[currentPage-1].feedDivStatus==='open'"
+  >
+    <strong class="text-info grade_title">Author Feedback</strong>
+    <textarea
+      class="form-control"
+      placeholder="Enter your feedback"
+      rows="3"
+      id="authFeedbackFocus"
+      ng-model="feedback[currentPage-1].tempTxt"
+    ></textarea>
+    <div class="marT10px">
+      <button class="btn btn-success btn-xs" ng-click="saveAuthorFeedBack()">
+        <i
+          class="fa {{ resquestSend ?'fa-circle-o-notch fa-spin': 'fa-floppy-o' }}"
+        ></i>
+        Save
+      </button>
+      <button
+        class="btn btn-danger btn-xs"
+        ng-click="feedback[currentPage-1].feedDivStatus='close';"
+      >
+        <i class="fa fa-times"></i> Cancel
+      </button>
+    </div>
+  </div>
+
+  <div
+    id="authorFeedback"
+    ng-if="feedback[currentPage-1].hasFeedback && feedback[currentPage-1].text !=='' &&  feedback[currentPage-1].feedDivStatus!=='open'"
+  >
+    <strong class="text-info grade_title">Author Feedback</strong>
+    <blockquote class="grade_blockqute">
+      <p math="{{feedback[currentPage-1].text}}"></p>
+
+      <footer>
+        Given At {{ feedback[currentPage-1].updatedOn | utcToLocal:'MMM dd, yyyy
+        hh:mm a' }}
+      </footer>
+    </blockquote>
+  </div>
+</div>

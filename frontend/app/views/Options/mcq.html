@@ -1,21 +1,26 @@
-
+<!--Question block-->
+<!-- <br> -->
 <div class="card mtResp">
-
-	<div class="card-content">
-		<div class="typo-line">
-			<span math="{{filteredQuestions[0].object.question}}"></span>
-		</div>
-		<br>
-		<div id="mcqOptions" class="options" style="padding-bottom:5px;">
-			<div ng-repeat="option in filteredQuestions[0].object.options">
-				<div class="qusOptions">
-					<input id="{{option.Id}}" type="checkbox" ng-model="questions[currentPage-1].object.options[$index].Selected" ng-change="onSelect(filteredQuestions[0], option,option.Id);" ng-disabled="{{mode=='review'}}"
-					/>  
-					<label for="{{option.Id}}">
-						<span math={{option.statement}}></span>
-					</label>
-				</div>
-			</div>
-		</div>
-	</div>
+  <div class="card-content">
+    <div class="typo-line">
+      <span math="{{filteredQuestions[0].object.question}}"></span>
+    </div>
+    <br />
+    <div id="mcqOptions" class="options" style="padding-bottom: 5px">
+      <div ng-repeat="option in filteredQuestions[0].object.options">
+        <div class="qusOptions">
+          <input
+            id="{{option.Id}}"
+            type="checkbox"
+            ng-model="questions[currentPage-1].object.options[$index].Selected"
+            ng-change="onSelect(filteredQuestions[0], option,option.Id);"
+            ng-disabled="{{mode=='review'}}"
+          />
+          <label for="{{option.Id}}">
+            <span math="{{option.statement}}"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

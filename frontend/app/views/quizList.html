@@ -1,0 +1,192 @@
+<style>
+	.boxShadow{
+        padding: 10px;
+        box-shadow: 0px 3px 14px -11px rgba(166, 159, 166, 1);
+        margin-bottom: 18px;
+        background: #fff;
+        border-radius: 2px;
+        border-left: 7px solid #68b3c7;
+    }
+    @media only screen and (max-width: 992px) {
+		.newBrand {
+			margin: 0px;
+		}
+        .subTitle{
+            margin: 0px !important;
+            padding: 0px 0px 10px 0px !important;
+        }
+        .navbar-right{
+            float: none  !important;
+        }
+	}
+   
+</style>
+
+<div class="pageLoader"></div>
+<nav class="navbar navbar-inverse navbar-fixed-top  navBG">
+	<div class="container-fluid">
+		
+		<div class="navbar-header">
+            <a class="navbar-brand newBrand" href="#">Examineer</a>
+        </div>
+    
+    
+        <ul class="nav navbar-nav navbar-right">
+            <li ><a href="javascript:void(0);" class="subTitle"> Single Sign-in by Email </a></li>
+        </ul>
+		
+	</div>
+</nav>
+
+<div class="container">
+    <div class="row" style="margin-top: 140px;" ng-if="!userLoggedIn">
+        <div class="col-xs-12 col-md-10 col-md-offset-1">
+            <div class="reminder boxShadow">
+                <p> You may login to all your active quizzes through a Single SignIn using your email address. Only quizzes where your email was declared as part of the participants data will be accessible. Choose one of the methods <span class="text-info bold">Email + OTP</span> or <span class="text-danger bold">Login with Google</span> </p>
+            </div>
+            
+            <div class="card">
+                 
+                <div class="card-header text-center">
+                    <h4 class="card-title">
+                        Login by <span class="text-info bold">Email + OTP</span> or  <span class="text-danger bold">Google</span>
+                    </h4>
+                </div>
+
+                 <div class="card-content">
+                    <div class="rowContainer">
+                        <div class="vl">
+                          <span class="vl-innertext">or</span>
+                        </div>
+                        <div class="col">
+                                   <div class="card bT">
+                                    <div class="card-content">
+                                        <div class="alert alert-info msg" ng-if="otpSended" style="padding:10px;">
+                                            <i class="fa fa-info-circle"></i> Please check your Email account for OTP verification.
+                                        </div> 
+                                        <div  ng-show="!otpSended" class="form-group" >
+                                            <label>Email address</label>
+                                            <input type="text"  ng-model="userData.email" placeholder="Enter Email Address" class="form-control">
+                                        </div>
+    
+                                       <div ng-show="otpSended" class="form-group">
+                                            <label>Enter OTP</label>
+                                            <input type="text" ng-model="userData.otp" placeholder="OTP" class="form-control">
+                                        </div> 
+    
+                                        <div style="display: flex;justify-content: space-between;align-items: center;">
+                                            <button type="button" ng-if="!otpSended" ng-disabled="isReq" class="btn btn-sm btn-fill btn-info" ng-click="sendOtp('sendOtp')"><i class="fa fa-paper-plane-o"></i> Send OTP</button>
+                                            <button type="button" ng-if="otpSended"  ng-disabled="isReq" class="btn btn-sm btn-fill btn-info" ng-click="sendOtp('verifyOtp')"><i class="fa fa-check-square-o"></i> Verify</button>
+                                            <button type="button"  class="btnLink" ng-if="otpSended" ng-disabled="isReq" ng-click="resetLogin()">Try with different email address.</button>
+                                        </div>
+    
+                                    </div>
+                                   </div>
+                                   <a ng-href="/" style="margin-left: 5px;margin-top: 5px;" class=" btnLink">Back to quiz login.</a>
+                        </div>
+                  
+                        <div class="col">
+                            <a g-login href="javascript:void(0)" class="google btn btn-danger btn-fill"><i class="fa fa-google fa-fw">
+                              </i> Login with Google
+                            </a>
+                        </div>
+                    </div>
+                 </div>
+                 
+                
+            </div>
+       </div>
+    
+    </div>
+
+    
+        <div class="row" style="margin-top: 100px;" ng-if="userLoggedIn">
+            <div class="col-xs-12 col-md-10 col-md-offset-1">
+                <div class="card">
+                    <div class="card-header" style="display:flex;justify-content: space-between;align-items: center;">
+                        <h4 class="card-title ">
+                          <b>My Quizzes</b> - {{userData.email}}
+                        </h4>
+                        <button type="button" ng-click="logout()" class="btn btn-danger btn-fill btn-sm">Logout</button>
+                    </div>
+                    <div class="card-content">
+
+                        <div class="row">
+                            <div class="col-md-9 text-left pad0px mT5px mB5px">
+                                 <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-default {{ filterKey=='Active' ? 'btn-fill':''}}"  ng-click="setFilter('Active')">Active</button>
+                                    <button type="button" class="btn btn-default {{ filterKey=='Upcoming' ? 'btn-fill':''}}"  ng-click="setFilter('Upcoming')">Upcoming</button>
+                                    <button type="button" class="btn btn-default {{ filterKey=='Finished' ?'btn-fill':''}}"  ng-click="setFilter('Finished')">Finished</button>
+                                    <button type="button" class="btn btn-default {{ filterKey=='All' ? 'btn-fill':''}}" ng-click="setFilter('All')">All</button>
+                                  </div>
+                            </div>
+
+                            <div class="col-md-3 pad0px mT5px mB5px">
+                                 <input type="text" ng-keyup="onSearch()" placeholder="Search" class="form-control" ng-model="search" />
+                            </div>
+
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Id</th>
+                                        <th>Title</th>
+                                        <th>Author</th>
+                                        <th>Type</th>
+                                        <th>Starts At</th>
+                                        <th>Deadline</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr  dir-paginate="quiz in filter_data  = (quizList | filter: search | filter:customFilter | orderBy:'beginTimeTS':true )  | itemsPerPage: 10"
+                                    pagination-id = "quizListPagination" current-page="currPage" >
+                                        <td>{{quiz.quizId}}</td>
+                                        <td title="{{quiz.title}}">{{quiz.title.length>50 ? quiz.title.substr(0,50)+'...' : quiz.title}}</td>
+                                        <td>{{quiz.authorName}}</td>
+
+                                        <td class="text-center"> <span class="badge" style="text-transform:capitalize"> {{quiz.quizType=='sectioned' ?'Asynchronous':'Synchronous'}} </span> </td>
+                                        <td> 
+                                            {{ quiz.beginTime |
+                                            utcToLocal:'MMM dd, yyyy hh:mm a'  }}</td>
+                                        
+                                        <td>{{ quiz.endTime |
+                                            utcToLocal:'MMM dd, yyyy hh:mm a'  }}</td>
+    
+                                        <td>
+                                            <button ng-disable="isReq"  ng-click="login(quiz)" class="btn btn-default  btn-sm">Login</button>
+                                        </td>
+                                    </tr>
+
+                                    <tr ng-if="filter_data.length===0"><th colspan="6" class="text-center">No record found</th></tr>
+                                   
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div style="display:flex;justify-content:space-between;align-items: center;flex-wrap: wrap;">
+                            <div><span ng-if="filter_data.length>0"><strong>Total Quizzes:</strong>  {{ filter_data.length }}</span></div>
+                            <div > 
+                                <dir-pagination-controls
+                                max-size="10"
+                                direction-links="true"
+                                boundary-links="true"
+                                pagination-id = "quizListPagination">
+                               </dir-pagination-controls>
+                            </div>
+
+                        </div>
+                        
+                        
+                        
+                          
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+</div>
+
+
+

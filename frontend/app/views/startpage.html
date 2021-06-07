@@ -16,7 +16,7 @@
 							</blockquote>
 							<strong>{{lang.caption_username}} - </strong>{{rsgetData('USER')}}
 					</div>
-				
+					<!-- <hr> -->
 				</div>
 				<div class="card-content">
 					<h4 class="card-title">
@@ -30,7 +30,19 @@
 					<br>
 					<br>
 
-					
+					<!-- remove this -->
+					 <!-- <button ng-click="testSubmit()">
+						 submit
+					 </button>
+					 <button ng-click="testProceed()">
+                       Proceed
+					 </button>
+					 <button ng-click="testSaveResponse()">
+                        saveResponse
+					 </button> -->
+					<!-- end of remove -->
+
+					<!-- normarl quiz -->
 					<div  ng-if="sections.length==1">
 
 						<h4 class="card-title">
@@ -62,7 +74,7 @@
 									<td class="no-help-used">{{grdSkippedAns[0]}}</td>
 									<td class="hint-used" ng-show="helpAllowed<=2 && helpAllowed>0">{{grdSkippedAns[1]}}</td>
 									<td class="explanation-used" ng-show="helpAllowed==2">{{grdSkippedAns[2]}}</td>
-									
+									<!-- <td ng-repeat="grd in grdSkippedAns">{{grd}}</td> -->
 								</tr>
 								<tr>
 									<td align="center">
@@ -71,7 +83,7 @@
 									<td class="no-help-used">{{grdWrongAns[0]}}</td>
 									<td class="hint-used" ng-show="helpAllowed<=2 && helpAllowed>0">{{grdWrongAns[1]}}</td>
 									<td class="explanation-used" ng-show="helpAllowed==2">{{grdWrongAns[2]}}</td>
-									
+									<!-- <td ng-repeat="grd in grdWrongAns">{{grd}}</td> -->
 								</tr>
 							</table>
 						</div>
@@ -116,8 +128,8 @@
 									<b style=" font-size: 16px;"> {{lang.msg_loginTimeActual}}</b>
 									
 
-									
-					<button class="btn btn-sm btn-danger btn-fill pull-right lH1" style="width: 83px" ng-click="loggedOut()">{{lang.caption_exit}}</button>
+									<!-- ng-if="showExitBtn" -->
+					<button ng-show="!deadLineOver" class="btn btn-sm btn-danger btn-fill pull-right lH1" style="width: 83px" ng-click="loggedOut()">{{lang.caption_exit}}</button>
 
 								</div>
 							</div>
@@ -129,7 +141,7 @@
 									<i class="fa fa-info-circle" style=" font-size: 16px;"></i>
 
 									<b style=" font-size: 16px;" > {{lang.msg_loginTimeAbsolute}}</b>
-									
+									<!-- ng-if="showExitBtn" -->
 					<button ng-show="!deadLineOver" class="btn btn-sm btn-danger btn-fill pull-right lH1" style="width: 83px" ng-click="loggedOut()">{{lang.caption_exit}}</button>
 
 								</div>
@@ -144,7 +156,7 @@
 							<div class="row">
 								<div class="col-xs-12 ">
 									<i class="fa fa-graduation-cap"></i>
-                                  
+                                    <!-- You can submit your quiz from here -->
 									<b style=" font-size: 16px;" ng-bind-html="meStartQuizMsg"></b>
 
 					<button type="button" ng-click="makeSummary()" class="btn btn-sm btn-info btn-fill pull-right  lH1">{{ lang.caption_submit }}</button>	
@@ -155,13 +167,13 @@
 						</li>
 					</ul>
 
-				
+					<!-- if deadline is over -->
 					<ul style="list-style: none;  padding: 8px 0px 8px 0" class='text-danger bg-danger' ng-show="deadLineOver">
 						<li >
 							<div class="row">
 								<div class="col-xs-12 ">
 									<i class="ti-alert"></i>
-                                    
+                                    <!-- You can submit your quiz from here -->
 									<b style=" font-size: 16px;"> {{ lang.msg_quiz_deadLineOver }} </b>
 									<button  class="btn btn-sm btn-danger btn-fill pull-right lH1" style="width: 83px" ng-click="loggedOut()">{{lang.caption_exit}}</button>
 								</div>
@@ -169,7 +181,7 @@
 						</li>
 					</ul>
 
-					
+					<!-- quiz deadline is not over but not yet start -->
 					<ul style="list-style: none;  padding: 8px 0px 8px 0" class='text-info bg-info' ng-show="qdeadLineNotOverButNotYetStart">
 						<li >
 							<div class="row">
@@ -182,7 +194,7 @@
 						</li>
 					</ul>
 					
-                   
+                    <!-- before quiz start countdown timer show here -->
                     <div class="row" ng-show="showTimer">
                        <div class="col-md-12 text-center insClock">
 						<p class="insClockP">
@@ -201,7 +213,7 @@
 					   </div>
 					</div>
 
-                   
+                     <!-- after countdown timer is end message will display here-->
 					<ul style="list-style: none;  padding: 8px 0px 8px 0" class='text-info bg-info' ng-show="!showTimer && quizTimerCounterEndMsg">
 						<li >
 							<div class="row">
@@ -227,7 +239,7 @@
 						<uib-accordion close-others="true"> 
 							<div uib-accordion-group class="panel-default" is-open="status.open" ng-repeat="sec in sections">
 								<uib-accordion-heading>
-									
+									 <!-- with resume button -->
 									<div class="row" ng-if="sectionStarted[sec.sectionId]">
                                         <div class="col-md-10 col-sm-12 col-xs-12 padLR0px">{{sec.secTitle}}</div>
                                         <div class="col-md-1 col-sm-11 col-xs-9 sectionTop padLR0px">
@@ -240,7 +252,7 @@
                                         </div>
 									</div>
 									
-									
+									<!-- without resume button -->
 									<div class="row" ng-if="!sectionStarted[sec.sectionId]">
                                         <div class="col-md-11 col-sm-12 col-xs-12 padLR0px">
 											{{sec.secTitle}}
@@ -300,7 +312,7 @@
 												<td class="no-help-used">{{sec.gradingMatrix[1][0]}}</td>
 												<td class="hint-used" ng-show="sec.helpAllowed<=2 && sec.helpAllowed>0">{{sec.gradingMatrix[1][1]}}</td>
 												<td class="explanation-used" ng-show="sec.helpAllowed==2">{{sec.gradingMatrix[1][2]}}</td>
-												
+												<!-- <td ng-repeat="grd in grdSkippedAns">{{grd}}</td> -->
 											</tr>
 											<tr>
 												<td align="center">
@@ -309,7 +321,7 @@
 												<td class="no-help-used">{{sec.gradingMatrix[2][0]}}</td>
 												<td class="hint-used" ng-show="sec.helpAllowed<=2 && sec.helpAllowed>0">{{sec.gradingMatrix[2][1]}}</td>
 												<td class="explanation-used" ng-show="sec.helpAllowed==2">{{sec.gradingMatrix[2][2]}}</td>
-												
+												<!-- <td ng-repeat="grd in grdWrongAns">{{grd}}</td> -->
 											</tr>
 										</table>
 
@@ -321,11 +333,12 @@
 								<br>
 							   
 								
-								
+								<!-- I agree button will not show after first enter to the section -->
 								<div class="row" ng-show="proceedBtn && !sectionStarted[sec.sectionId] ">
 									<div class="col-xs-12 padLR0px">
 										<div style="font-size:medium;">
-											
+											<!-- <label style="cursor:pointer;" for="checkme"><b>I Understand : </b> &nbsp; 
+														<input type="checkbox" id="checkme" name="checkbox"></label> -->
 											<div class="pull-left checkbox">
 												<input type="checkbox" id="checkme{{$index}}" ng-model="chkme[sec.sectionId]">
 												<label for="checkme{{$index}}">
@@ -415,7 +428,7 @@
 			  <b>{{lang.msg_submitGrade}}</b>
 			  <p>{{lang.msg_timeUp}}</p>
 
-			 
+			  <!-- Your quiz will automatically submit after -->
 			  <p> {{ lang.caption_quizSubmitTimer  }} <b>{{ autoSubmitCounter }}</b> {{ lang.caption_sec }}.</p>
 			  <div class="text-center">
 				<button class="btn btn-fill btn-wd btn-success btnMr" ng-click="quizFinalSubmit()">{{lang.caption_submit}}</button>

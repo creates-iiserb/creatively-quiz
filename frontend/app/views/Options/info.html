@@ -10,7 +10,7 @@
 					<span class="text-warning"><i class="fa fa-info-circle"></i> {{ lang.caption_ungraded }} </span>
 			</div>
 		</div>
-		
+		<!-- <h5 class="card-title">{{filteredQuestions[0].object.style}}</h5> -->
 	</div>
 	<div class="card-content">
 		<span math="{{filteredQuestions[0].object.header}}"></span>
@@ -45,6 +45,46 @@
 </div>
 
 
+ <!-- <div  ng-show="filteredQuestions[0].object.style=='Flash Card'">
+			
+	<div class="flashCard col-md-6" ng-repeat="findex in flashCards" ng-show="filteredQuestions[0].object.sections[findex[0]]">	  	
+			<figure>
+				<div class="back">
+				<div class="flashHeader">
+					<h4>Card {{$index+1}} </h4>
+					<button  class="flashFrontBtn btn btn-xs btn-success">{{lang.caption_front}} <i class="fa fa-reply"></i> </button>
+				</div>
+				<div class="flashBody">
+					<div class="flashData">
+							<span math="{{filteredQuestions[0].object.sections[findex[1]]}}"></span>
+					</div>
+
+				</div>
+				
+				</div>
+
+
+				<div class="front">
+					<div class="flashHeader">
+					<h4>Card {{$index+1}}</h4>
+						<button class="flashBackBtn btn btn-xs btn-default">
+							<i class="fa fa-share"></i> Back 
+					</button>
+					</div>
+					
+		
+					<div class="flashBody">
+						<div class="flashData">
+							<span math="{{filteredQuestions[0].object.sections[findex[0]]}}"></span>
+						</div>
+
+					</div>
+		
+				</div>
+			</figure>
+	</div>
+		
+</div>  -->
 
 
 <div class="row EH-row" ng-if="filteredQuestions[0].object.style=='Flash Card'" style="visibility: hidden;" id="flipElement">
@@ -95,3 +135,42 @@
 
 		</div>	  
 </div>
+
+ <!-- <div id="acordeon" ng-show="filteredQuestions[0].object.style=='Flash Card'">
+	<div class="panel-group" id="accordion">
+		<div class="panel  panel-border panel-default white" ng-repeat="findex in flashCards" ng-show="filteredQuestions[0].object.sections[findex[0]]">
+			<a data-toggle="collapse" data-target="#fcard{{$index}}{{filteredQuestions[0].ref}}">
+				<div class="panel-heading white">
+					<h4 class="panel-title">
+						Card {{$index+1}}<i class="ti-angle-down"></i>
+					</h4>
+				</div>
+			</a>
+			<div id="fcard{{$index}}{{filteredQuestions[0].ref}}" class="panel-collapse collapse">
+				<div class="panel-body">
+					 <div class="nav-tabs-navigation ">
+						<div class="nav-tabs-wrapper">
+							<ul id="tabs" class="nav nav-tabs">
+								<li class="active">
+									<a data-target="#front{{$index}}{{filteredQuestions[0].ref}}" data-toggle="tab" aria-expanded="true">{{lang.caption_front}}</a>
+								</li>
+								<li class="">
+									<a data-target="#back{{$index}}{{filteredQuestions[0].ref}}" data-toggle="tab" aria-expanded="false">{{lang.caption_back}}</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+					<div id="my-tab-content" class="tab-content text-center">
+						<div class="tab-pane active typo-line" id="front{{$index}}{{filteredQuestions[0].ref}}">
+							<span math="{{filteredQuestions[0].object.sections[findex[0]]}}"></span>
+						</div>
+						<div class="tab-pane typo-line" id="back{{$index}}{{filteredQuestions[0].ref}}">
+							<span math="{{filteredQuestions[0].object.sections[findex[1]]}}"></span>
+						</div>
+					</div> 
+                 
+				</div> 
+			</div>
+		</div>
+	</div>
+</div>  -->

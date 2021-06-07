@@ -1,0 +1,270 @@
+
+<div>
+	<nav class="navbar navbar-inverse">
+		<div class="container-fluid">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" >
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar bar1"></span>
+					<span class="icon-bar bar2"></span>
+					<span class="icon-bar bar3"></span>
+				</button>
+				<a class="navbar-brand" href="#">Examineer</a>
+			</div>
+		
+			<!-- Collect the nav links, forms, and other content for toggling -->
+			<ul class="nav navbar-nav navbar-right">
+				<li class="active"><a>{{lang.caption_student}}</a></li>
+				<li><a href="{{authorLink}}">{{lang.caption_author}}</a></li>
+				<li><a href="#"> {{ lang.caption_help }} </a></li>
+			</ul>
+		</div><!-- /.container-fluid -->
+	</nav>
+</div>
+
+<div class="row">
+	<div id="login" class="col-md-7 col-md-offset-2" > 
+		<div class="row">
+			<div id="bg-img" class="col-md-7">
+				<center><img class="img img-responsive" src="assets/img/X-05.png" /></center>
+			</div>
+		
+			
+			<div id="login-area" class="col-md-5">
+				<div class="login-title" align="right">
+					<b>Login to </b>Examineer
+				</div>
+	
+				<div  class="login-area">
+					<form role="form" name="loginForm">
+						<div class="form-group">
+							<!-- <label for="quizId">Quiz ID:</label> -->
+							<input style="text-transform: uppercase;" type="text" class="form-control input-lg" name="quizId" ng-model="user.quizId" placeholder="{{lang.caption_quizid}}" required>
+						</div>
+	
+						<div class="form-group">
+							<!-- <label for="uname">User Name:</label> -->
+					<input type="text" class="form-control input-lg" name="uname" ng-model="user.uname" placeholder="{{lang.caption_username}}" required>
+						</div>
+	
+						<div class="input-group">
+							<!-- <label for="pwd">Password:</label> -->
+							<input type="password" class="form-control input-lg" id="pwd" name="pwd" ng-model="user.pwd" placeholder="{{lang.caption_password}}" required>
+							<span class="input-group-btn">
+								<button class="btn btn-default eye-btn" type="button">
+									<i id="eyeIcon" class="fa fa-eye eye" aria-hidden="true"></i>
+								</button>
+							</span>
+						</div>
+						<label class="pull-right capson-msg">Caps Lock is on</label>
+						<br>
+						<div id="signInBtn" align="right">	
+							
+							
+							<button class="btn btn-wd btn-lg btn-fill btn-move-right"  ng-click="getlogin()" ng-disabled="loginForm.uname.$invalid || loginForm.pwd.$invalid || loginForm.quizId.$invalid || logReq">
+								<b>Sign</b> In
+								<span class="btn-label">
+									<i class="ti-angle-right"></i>
+								</span>
+							</button>	
+							<br>
+							<a href="#"
+							data-toggle="modal" data-target="#fireFoxMdl"
+							id="firefoxHelpLink"
+							data-backdrop="static"
+							class="pull-right bowerLink" 
+							>Trouble logging in on Firefox ?</a>
+						</div>
+					</form>
+				</div>	
+			</div>
+		</div>
+	
+	</div>
+</div>
+
+
+<div class="footer">
+	<div class="pull-right">
+		{{language.copyRight.copyShort}}
+	</div>
+</div>
+
+
+<div ng-include="'app/views/languageModal.html'"></div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="fireFoxMdl" role="dialog">
+	<div class="modal-dialog ">
+	
+	  <!-- Modal content-->
+	  <div class="modal-content">
+		<div class="modal-header">
+		  <button type="button" class="close" data-dismiss="modal">&times;</button>
+		  <h4 class="modal-title">Trouble logging in Firefox</h4>
+		  <hr>
+		</div>
+		<div class="modal-body">
+		  <p>
+			  If you have trouble logging in, try the steps below 
+		  </p>
+
+			<ol>
+			  <li>
+				   Open a different tab of your Firefox browser  and visit <a href="javascript:void(0);"> about:config</a> 
+			  </li>
+			  <li>
+				  Search <strong>network.http.sendOriginHeader</strong> and set the value to <strong>1</strong>
+			  </li>
+			  <li>
+				  After setting above value,please refresh this page.
+			  </li>
+
+			  <li>
+					If you have already done the above setting, you can skip these steps.
+			 </li>
+
+
+			</ol>
+
+			<div class="text-center">
+					<img ng-src="assets/img/firefoxSetting.gif" class="img-responsive" alt="Help image not load">
+			</div>
+		</div>
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-default" data-dismiss="modal">Skip</button>
+		</div>
+	  </div>		  
+	</div>
+</div>
+ 
+
+<style type="text/css">
+	.navbar-inverse{
+		background:#484541 !important;
+	}
+	.navbar{
+		min-height: 74px !important;
+	}
+	@media (max-width: 992px) {
+		ul.navbar-nav{
+			display: none;
+		}
+		.login-title, #signInBtn{
+			text-align: center !important;
+		}
+	}
+	ul.nav li:hover{
+		background: #f4f3ef;
+	}
+	.active, .active a{
+		background: #f4f3ef !important;
+		color:#66615b !important;
+	}
+	ul.nav li:hover a,a:hover{
+		color:#66615b !important;
+	}
+	.footer{
+		width:100%;
+		border-top:solid 1px #e7e7e7;
+		position:fixed;
+		bottom:0;
+		/* background: #333; */
+		padding: 5px;
+	}
+	.footer > div > a{
+		color:#484541;
+	}
+	.form-group, .input-group{
+		border-bottom: solid 1px #e7e7e7;
+	}
+	#errModal .modal-content{
+		background: #C70039;
+	    color: #FFF;
+	    text-align: justify;
+	}
+	#errModal .modal-body{
+		font-size:16px;
+	    padding: 0 40px;
+	}
+	#errModal .modal-footer, .modal-header{
+		border:none;
+	}
+	body{
+		background-color: #f4f3ef;
+	}	
+	input{
+		/* border-radius: 12px !important; */
+		background: transparent !important;
+		border:none !important;
+	}
+	#login{
+			background-size:contain; 
+			margin-top:6.5%;
+			margin-bottom:50px !important;
+	}
+	#bg-img img{
+			width:500px;height:400px;
+	}
+	.login-title, .error-msg
+	{
+		margin-bottom: 15%; 
+		color:#fff;
+		border-radius: 12px;
+		padding: 12px 0 12px 0;
+	}
+
+	.login-title
+	{
+		margin-top: 10%;
+		margin-bottom: 7%; 
+		font-size: 28px;
+		color: #66615b;
+		padding: 8px 0 8px 0;
+	}
+	.error-msg{
+		text-align: center;
+		margin-top: -4%;
+		margin-bottom: 2%; 
+		font-size: 14px;
+		background-color:#D24A49;
+		display: none;
+
+	}
+	.btn-form{
+		font-size: 18px;
+		width:100%;
+		background-color:#66615b;
+		border: none;
+		color: #fff;
+		padding: 12px 0 12px 0;
+		border-radius: 12px;
+	}
+	.btn-form:hover{
+		color:#fff;
+	}
+	button:disabled {
+    	opacity: 1 !important;
+	}
+	.quizDateValidation{	
+		display:none;	
+		background-color:#D24A49;
+		color:#fff;
+		text-align: center;
+		z-index: 9999;
+	}
+	@media screen and (max-width: 800px){
+	  .login-title
+		{
+			font-size: 30px;
+		}
+		.login-area{
+		}
+		#bg-img img{
+			width:130px;height:100px;
+		}
+	}
+
+</style>

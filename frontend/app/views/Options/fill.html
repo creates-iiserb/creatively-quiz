@@ -1,26 +1,32 @@
-
 <div id="qusBlock" class="card mtResp">
-		<div class="card-content" >
-		
-		  <div ng-if="sectData.partialGrading && mode =='quiz' && numFillIns>1" class="text-warning bold">
-            <i class="fa fa-info-circle"></i>  {{ lang.msg_partialBlanks }}  
-		  </div>	
+  <div class="card-content">
+    <div
+      ng-if="sectData.partialGrading && mode =='quiz' && numFillIns>1"
+      class="text-warning bold"
+    >
+      <i class="fa fa-info-circle"></i> {{ lang.msg_partialBlanks }}
+    </div>
 
-		  <div class="typo-line">
-			<span math="{{filteredQuestions[0].object.question}}"  ng-show="filteredQuestions[0].object.question!==''"></span>
-		  </div>
-		  <br>
-		  <div class="fillInOption">
-
-			<div class="options" style="padding-bottom:5px;">
-			  <div id="fillinStatement" class="fillin-statement">
-				<span compile="{{filteredQuestions[0].object.statement}}"> </span>
-			  </div>
-			  <div class="fillInOption fillin-suggestion" ng-show="filteredQuestions[0].object.suggestion!==''">
-				<span math="{{filteredQuestions[0].object.suggestion}}"> </span>
-			  </div>
-			</div>
-		  </div>
-		</div>
-	
-	  </div>
+    <div class="typo-line">
+      <span
+        math="{{filteredQuestions[0].object.question}}"
+        ng-show="filteredQuestions[0].object.question!==''"
+      ></span>
+    </div>
+    <br />
+    <div class="fillInOption disable-block">
+      <div class="options" style="padding-bottom: 5px">
+        <div id="fillinStatement" class="fillin-statement">
+          <span compile="{{filteredQuestions[0].object.statement}}"> </span>
+        </div>
+        <div
+          class="fillInOption disable-block fillin-suggestion"
+          ng-show="filteredQuestions[0].object.suggestion!==''"
+        >
+          <span math="{{filteredQuestions[0].object.suggestion}}"> </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /Fillin -->
+</div>

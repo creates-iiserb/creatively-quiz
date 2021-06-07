@@ -1,10 +1,15 @@
 <div class="pageLoader"></div>
 <div class="alert alert-danger msg-box"></div>
 <div class="container" ng-init="summary();">
-	
+	<!--section quiz -->
+	 <!-- show this when section quiz -->
 	 <div class="row mrT50" ng-if="showSumm && sections.length>1">
 
-	
+		<!-- <div class="col-md-12">
+			<div class="alert alert-warning f18px" style="border-left:5px solid #f0a810" ng-show="havePending && totalPendingForGrade>0">
+			 <i class="fa fa-bell"></i> {{ lang.msg_QuesPending }}
+			</div>
+		</div> -->
 
 		<div class="col-xs-12 col-sm-12 col-md-4 col-lg-4">
 				<div class="card card-user minHt475px">
@@ -31,9 +36,9 @@
 							<div class="row">
 								<div class="col-md-12">
 									<h3 class="scoreHead"> {{ totalScore }}
-									
+										<!-- Score -->
 										<small class="summLabelHtV">/ {{totalMaxScore}}
-											
+											<!-- max score -->
 										</small>
 										<br> <br>
 										<small class="f18px">{{lang.caption_scoreObtained}}</small>
@@ -42,14 +47,14 @@
 								<div class="col-md-12">
 									<h3 class=" scoreHead">
 										{{ totalCorrect }}
-										
+										<!-- correct answers -->
 										<small class="summLabelHtV" >/ {{totalGraded }}
-											
+											<!--  total questions -->
 										</small>
 										<br> <br>
 										<small class="f18px" style="display: block;">{{ lang.caption_correctAns }}</small>
 
-										<small  ng-show="isPartialFields && totalSub>0" class="text-warning bold" >{{ lang.msg_ObjQuesOnly }}</small>
+										<small  ng-show="havePending && totalSub>0" class="text-warning bold" >{{ lang.msg_ObjQuesOnly }}</small>
 									</h3>
 								</div>
 								<div class="col-md-12">
@@ -72,7 +77,7 @@
 										<h3 class="card-title"> {{lang.caption_summary}}</h3>
 								</div>
 								<div class="col-xs-12 col-sm-12 col-md-8 col-lg-8 text-right mytextCenter">
-									<button ng-hide="isPartialFields && totalPendingForGrade>0"  class="btn btn-warning btn-sm btn-fill" ng-click="downloadSummary()" ng-disabled="isDownloading" >
+									<button ng-hide="havePending"  class="btn btn-warning btn-sm btn-fill" ng-click="downloadSummary()" ng-disabled="isDownloading" >
 									<span ng-show="!isDownloading">
 										<i class="fa fa-download"></i>
 									</span>
@@ -84,7 +89,8 @@
 									<span id="waitTxt"> {{ lang.caption_download
 									}}</span> 
 									</button>
-								
+									<!-- <button ng-hide="havePending && totalPendingForGrade>0"  class="btn btn-success btn-sm btn-fill" data-toggle="modal" data-target="#sendMailModal" >
+									<i class="fa fa-envelope-o"></i> {{lang.caption_emailMe}}</button> -->
 								</div>
 						</div>
 						
@@ -120,7 +126,7 @@
 											</div>
 										</li>
 
-										<li ng-show="isPartialFields">
+										<li ng-show="havePending">
 											<div class="row">
 												<div class="col-xs-9">
 													<h5>{{ lang.caption_gradable_content }}</h5>
@@ -134,11 +140,11 @@
 										<li>
 											<div class="row">
 												<div class="col-xs-9 ">
-													<h5 class="{{isPartialFields?'padLeft20px mrB0px':''}}">
+													<h5 class="{{havePending?'padLeft20px mrB0px':''}}">
 														{{lang.caption_greadedQue}}
-													
+														<!-- Question graded -->
 													</h5>
-													<small ng-show="isPartialFields && totalSub>0" class="text-warning  {{isPartialFields ? 'padLeft20px':''}}" >{{ lang.msg_ObjQuesOnly }}</small>
+													<small ng-show="havePending && totalSub>0" class="text-warning  {{havePending ? 'padLeft20px':''}}" >{{ lang.msg_ObjQuesOnly }}</small>
 												</div>
 												<div class="col-xs-3">
 													<h5 >{{totalGraded}}</h5>
@@ -171,8 +177,8 @@
 										<li>
 											<div class="row">
 												<div class="col-xs-9">
-													<h5 class="padLeft20px {{isPartialFields?'mrB0px':''}}">{{lang.caption_incAns}}</h5>
-													<small ng-show="isPartialFields && totalSub>0" class="text-warning  {{isPartialFields ? 'padLeft20px':''}}" >{{ lang.msg_ObjQuesOnly }}</small>
+													<h5 class="padLeft20px {{havePending?'mrB0px':''}}">{{lang.caption_incAns}}</h5>
+													<small ng-show="havePending && totalSub>0" class="text-warning  {{havePending ? 'padLeft20px':''}}" >{{ lang.msg_ObjQuesOnly }}</small>
 												</div>
 												<div class="col-xs-3">
 													<h5 >{{ totalIncorrect }}</h5>
@@ -191,7 +197,20 @@
 											</div>
 										</li>
 
-										<li ng-show="isPartialFields && totalPendingForGrade>0">
+
+										<!-- <li ng-if="hasCorrection">
+											<div class="row">
+												<div class="col-xs-9">
+													<h5 class="padLeft20px">{{lang.caption_correction}}</h5>
+												</div>
+												<div class="col-xs-3">
+													<h5 >{{ totalCorrection }}</h5>
+												</div>
+											</div>
+										</li> -->
+
+
+										<li ng-show="havePending">
 											<div class="row text-warning">
 												<div class="col-xs-12">
 													<div style="display:flex">
@@ -211,7 +230,7 @@
 											<div class="row">
 												<div class="col-xs-9">
 													<h5>
-													
+														<!-- {{lang.caption_unGradedQue}} -->
 														Ungradable content
 													</h5>
 												</div>
@@ -225,7 +244,7 @@
 
 									
 
-								
+								   <!-- overiew statistics -->
 								   <div class="quizCollapse">
 									<uib-accordion ng-show="(reqBy == 'auth' || allowStats)" close-others="false">
 										<div uib-accordion-group class="panel-default" is-open="status.statistics" ng-init="status.statistics=true">
@@ -266,31 +285,46 @@
 							    	
 
 								</uib-tab>
+
+								
 								
 								<uib-tab  ng-repeat="summ in summArr" select="changeSecId(summ.secId)">
 									<uib-tab-heading>
-										{{ lang.caption_section }} {{$index +1}}
+										<i class="fa fa-ticket text-danger" ng-if="reqBy=='auth' && summ.hasTicket" title="Ticket Raised" ></i>
+											{{ lang.caption_section }} {{$index +1}}
 									</uib-tab-heading>
 										
-									<h4 class="text-center secHeading" > {{summ.secTitle}} </h4>
+									
+									
 
-									<div class="text-center">
+									<div class="text-center padB10px">
+										
+										<h4 class="secHeading" > {{summ.secTitle}} </h4>
 										<h5 class="text-danger isAttemptText" ng-if="!summ.isAttempted"> 
 											({{ lang.caption_notAttempted }})
 										</h5>
 										<h5 class="text-success isAttemptText" ng-if="summ.isAttempted">
 										({{ lang.caption_attempted }})
 										</h5>
+										
+										<button ng-disabled="viewResBtn"  class="btn btn-info btn-sm btn-fill marT10px " ng-click="viewResponse(summ.secId);">
+											<span ng-show="!viewResBtn"><i class="fa fa-eye"></i></span>
+											<span ng-show="viewResBtn"><i class="fa fa-circle-o-notch fa-fw fa-spin"></i></span>
+											{{lang.caption_viewRes}}
+										</button>
+										<br>
+									
 									</div>
+									<hr>
 
 									
 									<div class="text-center">
 										<div class="row">
 											<div class="col-md-4">
 												<h3 class="scoreHead"> {{ summ.score }}
-													
+													<!-- Score -->
 													<small class="fs16px" >/ {{summ.max}}
-														
+														<!-- max score -->
 													</small>
 													<br> <br>
 													<small class="fs16px">{{lang.caption_scoreObtained}}</small>
@@ -299,9 +333,9 @@
 											<div class="col-md-4">
 												<h3 class=" scoreHead">
 													{{ summ.correct }}
-												
+													<!-- correct answers -->
 													<small class="fs16px" ng-show="isNaN(summ.graded)" >/ {{summ.graded }}
-													
+														<!--  total questions -->
 													</small>
 													<br> <br>
 													<small class="fs16px">{{ lang.caption_correctAns }}</small>
@@ -329,7 +363,7 @@
 												</div>
 											</li>
 
-											<li ng-show="isPartialFields">
+											<li ng-show="summ.hasPending">
 												<div class="row">
 													<div class="col-xs-9">
 														<h5>Gradable content</h5>
@@ -345,8 +379,8 @@
 											<li>
 												<div class="row">
 													<div class="col-xs-9">
-														<h5 class="{{ isPartialFields ?'padLeft20px mrB0px':''}}">{{lang.caption_greadedQue}}</h5>
-														<small ng-show="isPartialFields && summ.totalSub>0" class="text-warning  {{isPartialFields ? 'padLeft20px':''}}" >{{ lang.msg_ObjQuesOnly }}</small>
+														<h5 class="{{ summ.hasPending ?'padLeft20px mrB0px':''}}">{{lang.caption_greadedQue}}</h5>
+														<small ng-show="summ.hasPending && summ.totalSub>0" class="text-warning  {{summ.hasPending ? 'padLeft20px':''}}" >{{ lang.msg_ObjQuesOnly }}</small>
 													</div>
 													<div class="col-xs-3">
 														<h5 >{{summ.graded}}</h5>
@@ -379,8 +413,8 @@
 											<li>
 												<div class="row">
 													<div class="col-xs-9">
-														<h5 class="padLeft20px {{ isPartialFields ?'mrB0px':''}}">{{lang.caption_incAns}}</h5>
-														<small ng-show="isPartialFields && summ.totalSub>0" class="text-warning  {{isPartialFields ? 'padLeft20px':''}}" >{{ lang.msg_ObjQuesOnly }}</small>
+														<h5 class="padLeft20px {{ summ.hasPending ?'mrB0px':''}}">{{lang.caption_incAns}}</h5>
+														<small ng-show="summ.hasPending && summ.totalSub>0" class="text-warning  {{summ.hasPending ? 'padLeft20px':''}}" >{{ lang.msg_ObjQuesOnly }}</small>
 													</div>
 													<div class="col-xs-3">
 														<h5 >{{summ.incorrect}}</h5>
@@ -399,7 +433,18 @@
 												</div>
 											</li>
 
-											<li ng-show="isPartialFields && summ.pending>0">
+											<!-- <li ng-if="summ.hasSecCorrection">
+												<div class="row">
+													<div class="col-xs-9">
+														<h5 class="padLeft20px">{{lang.caption_correction}}</h5>
+													</div>
+													<div class="col-xs-3">
+														<h5 >{{ summ.corrections }}</h5>
+													</div>
+												</div>
+											</li> -->
+
+											<li ng-show="summ.hasPending">
 												<div class="row text-warning">
 													<div class="col-xs-12">
 														<div style="display:flex">
@@ -450,10 +495,10 @@
 														<div id="sectioned_SummAvgSCRgarph_{{$index+1}}"></div>
 														<div class="summLable">
 															<div class="yours">
-																<strong>Your score : {{ summaryStats.stats[$index+1].Score.yours }}</strong>
+																<strong>Your score : {{ summaryStats.stats[$index+1].Score.yours.toFixed(2) }}</strong>
 															</div>
 															<div class="average">
-																<strong>Average : {{ summaryStats.stats[$index+1].Score.Avg }}</strong>
+																<strong>Average : {{ summaryStats.stats[$index+1].Score.Avg.toFixed(2) }}</strong>
 															</div>
 														</div>
 													</div>
@@ -463,13 +508,7 @@
 									</div>
 									
 
-									<div class="text-center" >
-											<button ng-disabled="viewResBtn"  class="btn btn-info btn-sm btn-fill " ng-click="viewResponse(summ.secId);">
-												<span ng-show="!viewResBtn"><i class="fa fa-eye"></i></span>
-												<span ng-show="viewResBtn"><i class="fa fa-circle-o-notch fa-fw fa-spin"></i></span>
-												{{lang.caption_viewRes}}
-											</button>
-									</div>
+									
 
 								</uib-tab>
 							</uib-tabset>
@@ -478,11 +517,16 @@
 			</div>
 		</div>
 	 </div>
-	
+	<!-- end of section quiz -->
+
+	<!-- plain quiz -->
 	<div class="row" ng-if="showSumm && sections.length==1">
 		<br>
 		<div class="col-lg-6 col-md-6 col-md-offset-3">
-		
+			<!-- <div class="alert alert-warning f18px" style="border-left:5px solid #f0a810" ng-show="havePending && summaryDetailsObj.pending>0">
+		    	 <i class="fa fa-bell"></i> {{  lang.msg_QuesPending }}
+			</div> -->
+			
 			<div class="card card-user">
 				<div class="image">
 					<img src="assets/img/bgimg.jpg" alt="...">
@@ -503,7 +547,7 @@
 											<button ng-disabled="viewResBtn"  class="btn btn-info btn-sm btn-fill sumMinBtn" ng-click="viewResponse(plainSecID);">
 												<span ng-show="!viewResBtn"><i class="fa fa-eye"></i></span>
 												<span ng-show="viewResBtn"><i class="fa fa-circle-o-notch fa-fw fa-spin"></i></span>
-												{{lang.caption_viewRes}}
+												{{lang.caption_quizRev}}
 										</li>
 
 										<li>
@@ -513,7 +557,7 @@
 								</ul>
 								 <ul class="list-inline">												
 										<li>
-											<button ng-hide="isPartialFields && summaryDetailsObj.pending>0"  class="btn btn-warning btn-sm btn-fill sumMinBtn" ng-click="downloadSummary()" ng-disabled="isDownloading" >
+											<button ng-hide="havePending"  class="btn btn-warning btn-sm btn-fill sumMinBtn" ng-click="downloadSummary()" ng-disabled="isDownloading" >
 												<span ng-show="isDownloading"><i class="fa fa-circle-o-notch fa-fw fa-spin"></i></span>
 												<span ng-show="!isDownloading">
 													<i class="fa fa-download"></i> 
@@ -521,7 +565,10 @@
 												{{ lang.caption_download
 												}}</button>
 										</li>
-									
+										<!-- <li>
+											<button ng-hide="havePending && summaryDetailsObj.pending>0"    class="btn btn-success btn-sm btn-fill sumMinBtn" data-toggle="modal" data-target="#sendMailModal" >
+												<i class="fa fa-envelope-o"></i> {{lang.caption_emailMe}}</button>
+										</li> -->
 								</ul>
 							
 						</div>
@@ -532,9 +579,9 @@
 					<div class="row mB5px">
 						<div class="col-md-3 col-md-offset-1">
 							<h3> {{summaryDetailsObj["score"]}}
-								
+								<!-- Score -->
 								<small>/ {{summaryDetailsObj["max"]}}
-								
+									<!-- max score -->
 								</small>
 								<br>
 								<small class="f18px">{{lang.caption_scoreObtained}}</small>
@@ -543,14 +590,14 @@
 						<div class="col-md-4">
 							<h3 class="mrB0px">
 								{{summaryDetailsObj["correct"]}}
-								
+								<!-- correct answers -->
 								<small>/ {{summaryDetailsObj["graded"]}}
-									
+									<!--  total questions -->
 								</small>
 								<br>
 								<small class="f18px">{{ lang.caption_correctAns }}</small>
 							</h3>
-							<small ng-show="isPartialFields && summaryDetailsObj.totalSub>0" class="text-warning " >{{ lang.msg_ObjQuesOnly }}</small>
+							<small ng-show="havePending && summaryDetailsObj.totalSub>0" class="text-warning " >{{ lang.msg_ObjQuesOnly }}</small>
 						</div>
 						<div class="col-md-3">
 							<h3> {{summaryDetailsObj["time"]}}
@@ -564,10 +611,14 @@
 			</div>
 			<div class="card">
 				<div class="card-header">
-					<h3 class="card-title text-center"> {{lang.caption_summary}}</h3>
+					<h3 class="card-title text-center"> {{lang.caption_summary}}  <i ng-if="reqBy === 'auth' && summaryDetailsObj['hasTicket']" class="fa fa-sm fa-ticket text-danger"  title="Ticket Raised"></i></h3>
 				</div>
 				<div class="card-content">
-				
+					<!-- <div class="text-warning row" ng-show="havePending">
+						<div class="col-md-12  f18px text-center">
+							<i class="fa fa-info-circle"></i> {{ summaryDetailsObj['allowPartialGrading'] ?'This score include partial grading.' : 'This score not include patial grading.' }}
+						</div>
+					</div> -->
 
 					<ul class="list-unstyled team-members">
 						<li>
@@ -581,7 +632,7 @@
 							</div>
 						</li>
 
-						<li ng-show="isPartialFields">
+						<li ng-show="havePending">
 							<div class="row">
 								<div class="col-xs-9">
 									<h5>{{ lang.caption_gradable_content }}</h5>
@@ -596,8 +647,8 @@
 						<li>
 							<div class="row">
 								<div class="col-xs-9">
-									<h5 class="{{isPartialFields ? 'padLeft20px mrB0px':''}}">{{lang.caption_greadedQue}}</h5>
-									<small ng-show="isPartialFields && summaryDetailsObj.totalSub>0" class="text-warning  {{isPartialFields ? 'padLeft20px':''}}" >{{ lang.msg_ObjQuesOnly }}</small>
+									<h5 class="{{havePending ? 'padLeft20px mrB0px':''}}">{{lang.caption_greadedQue}}</h5>
+									<small ng-show="havePending && summaryDetailsObj.totalSub>0" class="text-warning  {{havePending ? 'padLeft20px':''}}" >{{ lang.msg_ObjQuesOnly }}</small>
 
 								</div>
 								<div class="col-xs-3">
@@ -631,8 +682,8 @@
 						<li>
 							<div class="row">
 								<div class="col-xs-9">
-									<h5 class="padLeft20px {{isPartialFields ? 'mrB0px':''}}">{{lang.caption_incAns}}</h5>
-									<small ng-show="isPartialFields && summaryDetailsObj.totalSub>0" class="text-warning  {{isPartialFields ? 'padLeft20px':''}}" >{{ lang.msg_ObjQuesOnly }}</small>
+									<h5 class="padLeft20px {{havePending ? 'mrB0px':''}}">{{lang.caption_incAns}}</h5>
+									<small ng-show="havePending && summaryDetailsObj.totalSub>0" class="text-warning  {{havePending ? 'padLeft20px':''}}" >{{ lang.msg_ObjQuesOnly }}</small>
 								</div>
 								<div class="col-xs-3">
 									<h5 >{{summaryDetailsObj["incorrect"]}}</h5>
@@ -652,7 +703,18 @@
 							</div>
 						</li>
 
-						<li ng-show="isPartialFields && summaryDetailsObj.pending>0">
+						<!-- <li ng-if="hasCorrection">
+							<div class="row">
+								<div class="col-xs-9">
+									<h5 class="padLeft20px">{{lang.caption_correction}}</h5>
+								</div>
+								<div class="col-xs-3">
+									<h5>{{summaryDetailsObj['corrections']}}</h5>
+								</div>
+							</div>
+						</li> -->
+
+						<li ng-show="havePending">
 							<div class="row text-warning">
 								<div class="col-xs-12">
 									<div style="display:flex">
@@ -667,6 +729,8 @@
 							</div>
 						</li>
 
+						
+						
 
 						<li>
 							<div class="row">
@@ -708,7 +772,7 @@
 												<strong>Your score : {{ summaryStats.Score.yours }}</strong>
 											</div>
 											<div class="average">
-												<strong>Average : {{ summaryStats.Score.Avg }}</strong>
+												<strong>Average : {{ summaryStats.Score.Avg.toFixed(2) }}</strong>
 											</div>
 											
 										</div>
@@ -727,7 +791,7 @@
 			</div>
 		</div>
 	</div>
-
+	<!-- end of plain quiz -->
 	
 	<div class="row" ng-cloak ng-if="!showSumm">
 		<div class="col-xs-12 col-sm-10 col-sm-offset-1">
@@ -760,15 +824,20 @@
 			</div>
 		</div>
 	</div>
-	
+	<!-- error message to be displayed when the quiz is not yet attempted -->
+	<!-- <div ng-hide="{{rsgetData('ATTEMPT')}}" class="alert alert-danger">
+		<center>
+			<p>Session expired. Login again</p>
+		</center>
+	</div> -->
 </div>
 
 
-
+ <!-- Modal -->
  <div class="modal fade" id="sendMailModal" role="dialog">
 		<div class="modal-dialog">
 		
-		
+		  <!-- Modal content-->
 		  <div class="modal-content">
 			<div class="modal-header">
 			  <button type="button" class="close" data-dismiss="modal">&times;</button>

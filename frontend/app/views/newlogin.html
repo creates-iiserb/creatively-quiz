@@ -19,7 +19,7 @@
 			<ul class="nav navbar-nav navbar-right">
 				<li ><a>{{lang.caption_student}}</a></li>
 				<li><a href="{{configData.authorUrl}}">{{lang.caption_author}}</a></li>
-				
+				<!-- <li><a href="#"> {{ lang.caption_help }} </a></li> -->
 			</ul>
 		</div>
 	</nav>
@@ -83,7 +83,9 @@
 										  {{ lang.caption_retreive_credential }}
 										</a>
 
-										
+										<a ng-href="/#quizList" style="display: block;" class="bowerLink mT5px">
+											{{ lang.caption_single_signin }}
+										</a>
 
 								</div>
 
@@ -107,9 +109,11 @@
 <div ng-include="'app/views/languageModal.html'"></div>
 
 
+<!-- Modal -->
 <div class="modal fade" id="fireFoxMdl" role="dialog">
 	<div class="modal-dialog ">
-
+	
+	  <!-- Modal content-->
 	  <div class="modal-content">
 		<div class="modal-header">
 		  <button type="button" class="close" data-dismiss="modal">&times;</button>

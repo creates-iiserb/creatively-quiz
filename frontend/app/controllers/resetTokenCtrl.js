@@ -1,4 +1,4 @@
-
+//authentication-ctrl.js
 app.controller('resetTokenCtrl',['$scope', '$rootScope', '$location','requestService','helperService',function ($scope, $rootScope, $location,requestService,helperService){   
     $scope.pageLoad = false; 
     $scope.btnReq = false;
@@ -6,7 +6,7 @@ app.controller('resetTokenCtrl',['$scope', '$rootScope', '$location','requestSer
 
     $scope.initReq = function(){
         var data = $location.search();
-       
+        //console.log(data);
         if (data.quizId && data.uname && data.token){
             $scope.reqData = {
                 quizId : data.quizId,
@@ -14,7 +14,7 @@ app.controller('resetTokenCtrl',['$scope', '$rootScope', '$location','requestSer
                 token : data.token
             }
 
-          
+            console.log($scope.reqData);
             setTimeout(function(){
                     $(".pageLoader").fadeOut("slow");
                     $scope.isValidReq = 1;    
@@ -39,12 +39,14 @@ app.controller('resetTokenCtrl',['$scope', '$rootScope', '$location','requestSer
         $scope.btnReq = true;
         requestService.request('POST',true,'/unlockAccount',$scope.reqData).then(function(response){ 
         var result = response.data;
-           
+            //console.log('Load quizresponsedata---------')
+            //console.log(JSON.stringify(result,null,2));
             let type="";
             let msg = "";
             if(result.status){
                $scope.isValidReq = 3;
-              
+               //type="success";
+               //msg = result.data.msg;
             }else{
                 let errorcode = result.error.code;
                 type =  result.error.type;

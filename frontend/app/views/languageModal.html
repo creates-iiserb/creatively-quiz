@@ -1,4 +1,4 @@
-
+<!-- language changer -->
 <div class="modal fade" id="langModal" role="dialog">
 		<div class="modal-dialog">
 		  <div class="modal-content">
@@ -34,6 +34,20 @@
 </div> 
 
 	
+<style>
+	.side-icon-bar{
+		border:none;
+	}
+	.switchQuiz{
+		background-color: #68B3C8;
+	}
+	.switchQuiz:hover{
+       background-color: #429cb6 !important;
+	}
+	
+</style>
+	
 <div class="side-icon-bar">
-        <a data-toggle="modal"  data-target="#langModal" title="{{ lang.caption_choose_language}}" class="language cursorPointer"><i class="fa fa-language"></i></a>
+	<a  href="javascript:void();" id="switchQuiz"  tooltip-placement="left"  uib-tooltip="My Quizzes"  ng-if="checkLoginEmail()" ng-click="loggedOut()"   class="switchQuiz cursorPointer"><i class="fa fa-home"></i></a>
+    <a  tooltip-placement="left" uib-tooltip="{{ lang.caption_choose_language }}" data-toggle="modal"  data-target="#langModal" class="language cursorPointer"><i class="fa fa-language"></i></a>
 </div>

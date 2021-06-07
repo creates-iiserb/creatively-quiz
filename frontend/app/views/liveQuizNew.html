@@ -68,7 +68,8 @@
 <div class="pageLoader"></div>
 
 <div class="lqContainer">
- 
+  <!-- header -->
+     <!-- not display -->
     <div class="lqHeader" id="headerRow">
       <h4 class="lqExamineerLogo">
         Examineer
@@ -123,7 +124,7 @@
 
      
       <div class="lqDropDownDiv">
-        
+        <!-- ng-disabled="iViewDisable" -->
         <button type="button" 
           class="lqBtn lqBtn-default"
           ng-disabled="iViewDisable"
@@ -159,7 +160,16 @@
                 <b>{{lang.caption_quiz_instruction}}</b>
               </a>
             </li>
-            
+            <!-- <li ng-repeat="sec in sectionInst ">
+              <a
+                href="javascript:void(0);"
+                ng-click="openSecInstr('section',$index+1)"
+                ><b
+                  >{{ lang.caption_section }} {{$index + 1}} {{
+                  lang.caption_instruction }}</b
+                ></a
+              >
+            </li> -->
 
             <li ng-show="showYoutubeVidBtn">
               <a href="javascript:void(0);"
@@ -193,10 +203,10 @@
       </div>
      
     </div>
-   
+    <!-- not display -->
 
     <div class="lqHeader1" id="headerRow1">
-    
+      <!-- when no video,chat,whiteboard is played -->
       <h4 class="lqExamineerLogo1" id="lqrow1ExamineerLogo1">
         Examineer
       </h4>
@@ -281,7 +291,16 @@
                 <b>{{lang.caption_quiz_instruction}}</b>
               </a>
             </li>
-           
+            <!-- <li ng-repeat="sec in sectionInst ">
+              <a
+                href="javascript:void(0);"
+                ng-click="openSecInstr('section',$index+1)"
+                ><b
+                  >{{ lang.caption_section }} {{$index + 1}} {{
+                  lang.caption_instruction }}</b
+                ></a
+              >
+            </li> -->
 
             <li ng-show="showYoutubeVidBtn">
               <a href="javascript:void(0);"
@@ -312,7 +331,9 @@
           </ul>
         </div>
       </div>
-      
+       <!-- end when no video,chat,whiteboard is played-->
+
+       <!-- when video,chat,whiteboard is played -->
        <div class="lqTimer1" id="lqrow1lqTimer2"> 
             <div class="lqbtnGrp mrL0px" ng-show="isQuestionTypeContent()">
               <button type="button" 
@@ -396,7 +417,16 @@
                     <b>{{lang.caption_quiz_instruction}}</b>
                   </a>
                 </li>
-              
+                <!-- <li ng-repeat="sec in sectionInst ">
+                  <a
+                    href="javascript:void(0);"
+                    ng-click="openSecInstr('section',$index+1)"
+                    ><b
+                      >{{ lang.caption_section }} {{$index + 1}} {{
+                      lang.caption_instruction }}</b
+                    ></a
+                  >
+                </li> -->
     
                 <li ng-show="showYoutubeVidBtn">
                   <a href="javascript:void(0);"
@@ -428,9 +458,9 @@
             </div>
           </div>
       </div>
-      
+       <!-- end video,chat,whiteboard is played -->
     </div> 
-  
+  <!-- end of header -->
 
   <div class="lqBodyFull" id="lqBodyId">
     <div class="lqContent">
@@ -473,7 +503,7 @@
               </div>
             </div> 
   
-       
+            <!-- Answer -->
             <div id="quiz-info" class="row" ng-show="checkInAnsMode()">
                 <div   class="col-md-12 {{!divideView()? 'col-md-10 col-md-offset-1':''}}">
                 <div class="card">
@@ -486,7 +516,7 @@
                   <hr>
                   <div class="help-content">
                     <div ng-show="filteredQuestions.type!='info' && attendQuestion" style="margin-top: 15px;">
-                      
+                       <!-- non-subjective:mcq,fillIn,arrange -->
                        <div class="row">
                         <div class="col-md-3 padLR0px text-primary bold  lh1_5em f14px" ng-show="ansHelpAllowed>0 && (hintUsed>0 && hintUsed<=2)">
                           <i class="fa fa-lightbulb-o"></i> {{ lang.caption_hintUsed }}
@@ -527,7 +557,7 @@
                 </div>
                 </div>
             </div>
-          
+            <!-- end of Answer -->
           </div>
   
           <div class="row" ng-show="quizState=='notStart'">
@@ -572,7 +602,7 @@
   
   
           <div id="quiz-infoRow" class="row">
-            
+            <!-- Quiz Instructions -->
             <div  class="col-xs-12 {{!divideView()? 'col-md-10 col-md-offset-1':''}}" ng-show="quizState=='quizInst'" >
                 <div class="card">
                     <div class="card-header">
@@ -614,7 +644,9 @@
                   </div>
                 </div>
             </div>
-           
+            <!-- end of quiz instruction -->
+  
+             <!-- Section Instructions -->
              <div  class="col-xs-12 {{!divideView()? 'col-md-10 col-md-offset-1':''}}" ng-show="quizState=='secInst'"  >
               <div class="card">
                 <div class="card-header">
@@ -625,7 +657,9 @@
                         <span class="pull-right qBold">({{ lang.caption_section }} {{selectSection}})</span>
                       </h4>
                    
-               
+                    <!-- <div class="pull-right">
+                      <span style="cursor:pointer;" class="label label-danger" ng-click="closeInfo('quiz-instructions')">&#10006;</span>
+                    </div> -->
                   </div>
                 </div>
                 <div class="card-content">
@@ -680,7 +714,7 @@
                               <td class="no-help-used">{{sectData.gradingMatrix[1][0]}}</td>
                               <td class="hint-used" ng-show="sectData.helpAllowed<=2 && sectData.helpAllowed>0">{{sectData.gradingMatrix[1][1]}}</td>
                               <td class="explanation-used" ng-show="sectData.helpAllowed==2">{{sectData.gradingMatrix[1][2]}}</td>
-                             
+                              <!-- <td ng-repeat="grd in grdSkippedAns">{{grd}}</td> -->
                             </tr>
                             <tr>
                               <td align="center">
@@ -689,7 +723,7 @@
                               <td class="no-help-used">{{sectData.gradingMatrix[2][0]}}</td>
                               <td class="hint-used" ng-show="sectData.helpAllowed<=2 && sectData.helpAllowed>0">{{sectData.gradingMatrix[2][1]}}</td>
                               <td class="explanation-used" ng-show="sectData.helpAllowed==2">{{sectData.gradingMatrix[2][2]}}</td>
-                             
+                              <!-- <td ng-repeat="grd in grdWrongAns">{{grd}}</td> -->
                             </tr>
                           </table>
             
@@ -702,7 +736,9 @@
                 </div>
               </div>
             </div>
-           
+            <!-- end of Section instruction -->
+  
+            <!-- show stats -->
             <div  class="col-xs-12 {{!divideView()? 'col-md-10 col-md-offset-1':''}}" ng-show="checkInStatsMode()">
                 <div class="card">
                     <div class="card-header">
@@ -726,7 +762,7 @@
   
                 </div>
             </div>
-          
+            <!-- end of stats -->
            
           </div>
   
@@ -740,7 +776,7 @@
   </div>
 </div>
 
- 
+ <!-- youtube chat and video ,whiteboard box -->
  <div id="youtubeVideoBox"  title="Live stream">
 </div>
 
@@ -749,14 +785,14 @@
 
 <div id="whiteboardBox"  title="Whiteboard">
 </div>
+<!-- end of chat and video box -->
 
 
-
-
+<!-- FAB -->
 <input type="checkbox" id="lqFabCheck" style="display: none;">
 <div class="lqfab-container" ng-show="isQuestionTypeContent()">
     <label for="lqFabCheck" class="lqfab lqfab-icon-holder">
-      
+      <!-- <i class="fa fa-ellipsis-v"></i> -->
       <i class="fa fa-graduation-cap"></i>
     </label>
     <ul class="lqfab-options">
@@ -798,11 +834,11 @@
       </li>
     </ul>
   </div>
-
+<!-- End of FAB -->
 
 <div ng-include="'app/views/languageModal.html'"></div>
 
-
+<!-- Bootstrap model for User details -->
 <div class="modal fade" id="userDetails" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -846,7 +882,10 @@
     </div>
   </div>
 </div>
+<!-- End -->
 
+<!-- quiz instruction Model -->
+<!-- to disable, add in accordion-group  is-disabled="false" -->
 <div class="modal fade" id="quizInstuction" role="dialog">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -988,10 +1027,12 @@
     </div>
   </div>
 </div> 
+<!-- end of quiz instruction Model -->
 
+<!-- section instruction Model -->
 <div class="modal fade" id="secInstuction" role="dialog">
   <div class="modal-dialog modal-lg">
-   
+    <!-- Modal content-->
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">
@@ -1072,7 +1113,7 @@
                 <td class="explanation-used" ng-show="sectData.helpAllowed==2">
                   {{sectData.gradingMatrix[1][2]}}
                 </td>
-              
+                <!-- <td ng-repeat="grd in grdSkippedAns">{{grd}}</td> -->
               </tr>
               <tr>
                 <td align="center">
@@ -1088,7 +1129,7 @@
                 <td class="explanation-used" ng-show="sectData.helpAllowed==2">
                   {{sectData.gradingMatrix[2][2]}}
                 </td>
-             
+                <!-- <td ng-repeat="grd in grdWrongAns">{{grd}}</td> -->
               </tr>
             </table>
           </div>
@@ -1097,10 +1138,12 @@
     </div>
   </div>
 </div>
+<!-- end of section instruction Model -->
 
+<!-- math doc model -->
 <div class="modal fade" id="mathDocMdl" role="dialog">
   <div class="modal-dialog modal-lg">
-  
+    <!-- Modal content-->
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -1112,10 +1155,11 @@
     </div>
   </div>
 </div>
+<!-- end of math doc model -->
 
-
+<!-- Calculator -->
 <div id="calc">
-  
+  <!--Close button-->
   <div class="row">
     <div class="col-sm-12 calCloseBtn">
       <button id="close" style="font-size: 20px;" onclick="calcClose()">
@@ -1127,7 +1171,7 @@
     </div>
   </div>
 
-
+  <!-- display and output -->
   <div class="row">
     <div class="col-sm-12">
       <form name="calculator" id="calculator">
@@ -1150,7 +1194,7 @@
     </div>
   </div>
 
-
+  <!--buttons-->
   <div class="row keys">
     <div class="col-md-12 padit1" id="top-btn">
       <button
@@ -1205,10 +1249,10 @@
     </div>
   </div>
 
-
+  <!--keypad start-->
   <div class="row keypad" style="display: none;">
     <div ng-if="calcType=='scientific'" class="col-sm-12">
-   
+      <!--start function keys-->
       <table class="wid calc-table">
         <tr class="key">
           <td>
@@ -1319,7 +1363,9 @@
           </td>
         </tr>
       </table>
-      
+      <!--End function keys-->
+
+      <!-- start numbers -->
       <table class="wid calc-table">
         <tr class="key">
           <td>
@@ -1514,7 +1560,7 @@
     </div>
 
     <div ng-if="calcType=='basic'" class="col-sm-12">
-    
+      <!-- start numbers -->
       <table class="wid calc-table">
         <tr class="key">
           <td>
@@ -1707,10 +1753,10 @@
     </div>
   </div>
 
-
+  <!-- End numbers -->
   <div style="clear: both;"></div>
 </div>
-
+<!-- End Calc -->
 
 <div id="overlay">
   <div class="clear-fix">
